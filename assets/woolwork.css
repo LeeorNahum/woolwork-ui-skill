@@ -205,13 +205,13 @@ h1,h2,h3,.display{font-family:var(--font-display)}
   background:color-mix(in srgb,var(--cream) 82%,black 6%);
   box-shadow:inset 0 3px 5px rgba(30,18,10,.3)}
 .spool .fill{position:absolute;inset:3px auto 3px 3px;width:var(--p,60%);border-radius:6px;
-  background-color:var(--fc,var(--rose));
+  background-color:var(--fc,var(--c,var(--rose)));
   background-image:repeating-linear-gradient(60deg,rgba(255,255,255,.35) 0 4px,rgba(0,0,0,.18) 4px 8px,transparent 8px 12px);
   box-shadow:inset 0 2px 1px rgba(255,255,255,.35),inset 0 -2px 2px rgba(0,0,0,.28);
   transition:width .6s var(--spring)}
 .spool .fill::after{content:"";position:absolute;right:-9px;top:50%;width:20px;height:20px;margin-top:-10px;border-radius:50%;
   background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.45),transparent 45%),
-    repeating-conic-gradient(from 20deg,rgba(255,255,255,.25) 0 14deg,rgba(0,0,0,.15) 14deg 28deg),var(--fc,var(--rose));
+    repeating-conic-gradient(from 20deg,rgba(255,255,255,.25) 0 14deg,rgba(0,0,0,.15) 14deg 28deg),var(--fc,var(--c,var(--rose)));
   box-shadow:0 2px 3px rgba(30,20,12,.4)}
 /* ---------- WOVEN LABEL (chip / badge / tab): a clothing label tacked
    down at each end with a single stitch (the two dots are tack stitches) */
@@ -328,8 +328,9 @@ dialog.pinned[open]{animation:pindrop .55s var(--spring)}
 .snap-radio:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px}
 /* ---------- SELECT: a pocket with a thread pull ---------- */
 select.pocket{appearance:none;cursor:pointer;padding-right:40px;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10'><path d='M2 2 L8 8 L14 2' fill='none' stroke='%237a5c49' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  background-repeat:no-repeat;background-position:right 14px center}
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10'><path d='M2 2 L8 8 L14 2' fill='none' stroke='%237a5c49' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"),var(--grain);
+  background-repeat:no-repeat,repeat;background-position:right 14px center,0 0;
+  background-size:16px 10px,140px 140px;background-blend-mode:normal,overlay}
 textarea.pocket{min-height:96px;resize:vertical;font:inherit}
 /* ---------- TABS: felt folder tabs stitched onto a shared panel ---------- */
 .tabs{display:flex;gap:8px;padding:0 14px;position:relative;z-index:1}

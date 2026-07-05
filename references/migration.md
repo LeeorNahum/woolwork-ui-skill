@@ -21,6 +21,8 @@ Fixes and additions; no class renames or removals. Migration is a wholesale repl
 - `.buttonhole` and `.strands` are now handled by delegated listeners like every other behavior, so instances added after load work. Remove any project-side re-initialization that existed to work around this.
 - New `.pompom` decorative component and `.embroider` display-heading treatment; see `references/dictionary.md`.
 - Tooltip bubbles and their threads now carry an explicit z-index so they cannot slip under adjacent patches.
+- `select.pocket` sizes its thread-pull chevron explicitly and keeps the fiber grain layer. Previously the chevron inherited the pocket's 140px grain tile size and rendered as a giant glyph.
+- The spool fill now dyes from `--c` like every other component (`--fc` still wins when set, as a deprecated alias). Previously `--c` on a spool silently did nothing.
 - Felt, knit, and patch buttons transition `background-color` over 0.4s so the night flip reads as one lamp dimming rather than surfaces snapping one by one.
 - New recommended head snippet (`assets/starter.html`): a one-line inline script that adds `ww-js` before first paint, eliminating the visible flash of content that could appear before reveals armed on slow paints. Add it right after the stylesheet link in projects using `.sew`.
 
