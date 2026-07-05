@@ -12,7 +12,13 @@ Woolwork is versioned so that an agent invoking this skill on an existing projec
 
 ## Changelog
 
-### 1.1.0 (current)
+### 1.1.1 (current)
+
+Patch fix; no class renames or removals. Migration is a wholesale replacement of `woolwork.css` from `assets/`.
+
+- Tab rows use slightly tighter side padding so three folder tabs do not create a one-pixel horizontal overflow on narrow mobile viewports.
+
+### 1.1.0
 
 Fixes and additions; no class renames or removals. Migration is a wholesale replacement of `woolwork.css` and `woolwork.js` from `assets/`, plus the markup and head checks below.
 

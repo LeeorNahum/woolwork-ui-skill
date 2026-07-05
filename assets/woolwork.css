@@ -1,8 +1,8 @@
-/* ============ WOOLWORK v1.1.0 ============
+/* ============ WOOLWORK v1.1.1 ============
    A wool, felt, and yarn material system for the web.
    Laws: one top-left light · nothing flat · nothing straight · everything attached · everything soft. */
 :root{
-  --ww-version:"1.1.0";
+  --ww-version:"1.1.1";
   /* board + dyed wool palette (heathered by texture, never flat) */
   --board:#e3ddd0; --cream:#f6efdf; --rose:#e2707e; --butter:#f0c05a; --leaf:#7fae6a;
   --sky:#6fa8c9; --plum:#9a7bb0; --cocoa:#7a5c49; --ink:#463527; --ink-soft:#7d6a56;
@@ -335,7 +335,7 @@ select.pocket{appearance:none;cursor:pointer;padding-right:40px;
   background-size:16px 12px,140px 140px;background-blend-mode:normal,overlay}
 textarea.pocket{min-height:96px;resize:vertical;font:inherit}
 /* ---------- TABS: felt folder tabs stitched onto a shared panel ---------- */
-.tabs{display:flex;gap:8px;padding:0 14px;position:relative;z-index:1}
+.tabs{display:flex;gap:8px;padding:0 12px;position:relative;z-index:1}
 .tabs>button{border:0;cursor:pointer;color:var(--ink);font:700 .95rem var(--font-display);
   padding:10px 18px 14px;margin-bottom:-6px;border-radius:12px 14px 0 0;
   background-color:color-mix(in srgb,var(--c,var(--cream)) 72%,var(--board));
