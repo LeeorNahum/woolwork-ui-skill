@@ -78,7 +78,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 
 | UI element | Craft object | How |
 |---|---|---|
-| Headings | Display face with a lifted-thread shadow | Default `h1`-`h6` styling from the kit typography |
+| Headings | Display face from the kit typography | `h1`-`h3` and `.display` get `--font-display` automatically |
 | Display heading emphasis | Embroidered lettering, thread raised off the felt | `.embroider` on the heading |
 | Body text | Ink on felt | Default; always from `--ink`/`--ink-soft` |
 | Blockquote | Fabric with a yarn selvedge along its left edge | `blockquote.selvedge` |

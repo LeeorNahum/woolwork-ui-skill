@@ -11,42 +11,40 @@ Defined on `:root` in `woolwork.css`:
   --ww-version: "1.1.0";
 
   /* Board (the work surface behind everything) */
-  --board: #e3ddd0;          /* soft pale felt over burlap weave */
+  --board: #e3ddd0;
 
-  /* Felt swatches */
-  --felt-cream:  #f3ead8;
-  --felt-butter: #f0d98c;
-  --felt-rose:   #e8a5a5;
-  --felt-leaf:   #a8c686;
-  --felt-plum:   #b48ec9;
-  --felt-sky:    #9cc3e0;
+  /* Dyed wool palette */
+  --cream: #f6efdf; --rose: #e2707e; --butter: #f0c05a;
+  --leaf: #7fae6a;  --sky: #6fa8c9;  --plum: #9a7bb0;
 
-  /* Thread and ink */
-  --thread: #6b5d4f;         /* stitch color, borders, dashed seams */
-  --ink:    #4a3f33;         /* body text */
-  --ink-soft: #7a6c5b;       /* secondary text */
+  /* Thread partners: stitches and accents on the matching felt */
+  --thread-cream: #bfa886; --thread-rose: #a94856; --thread-butter: #b08428;
+  --thread-leaf: #4f7a3e;  --thread-sky: #3f728f;  --thread-plum: #6b5180;
 
-  /* Light (one law: single top-left light) */
-  --light-x: -1;             /* direction multipliers used in shadow recipes */
-  --light-y: -1;
+  /* Ink, cocoa thread, and the paper accent */
+  --cocoa: #7a5c49; --ink: #463527; --ink-soft: #7d6a56; --paper: #fbf6ea;
 
-  /* Motion */
-  --spring: linear(0, 0.6 22%, 1.08 48%, 0.985 72%, 1);
-  --settle: 320ms;
+  /* One top-left light: the highlight/occlusion pair every shadow uses */
+  --hi: rgba(255,252,242,.38); --lo: rgba(64,44,32,.22);
+
+  /* Motion and type */
+  --spring: linear(0,.32 8%,.84 19%,1.055 30%,1.014 43%,.986 56%,1.003 73%,1);
+  --font-display: "Baloo 2", ui-rounded, sans-serif;
+  --font-body: "Nunito", ui-rounded, system-ui, sans-serif;
 }
 ```
 
-Components derive from these. For example `.btn-patch` uses `color-mix(in oklch, var(--c), black 12%)` for its pressed shade, so a re-dyed button stays consistent.
+Components derive from these. For example `.sewn-button` shades its rim with `color-mix(in srgb, var(--c) 62%, black)`, so a re-dyed button stays consistent.
 
 ## Dyeing from a brand color
 
-When porting an existing site, do not invent a palette. Dye the wool with the brand:
+When porting an existing site, do not invent a palette. Dye the wool with the brand by overriding the felt slot closest to it and that slot's thread partner:
 
 ```css
 :root {
   --brand: #4f6df5;                    /* the site's existing primary */
-  --felt-primary: color-mix(in oklch, var(--brand) 70%, var(--felt-cream));
-  --thread: color-mix(in oklch, var(--brand) 30%, #6b5d4f);
+  --sky: color-mix(in oklch, var(--brand) 60%, var(--cream));
+  --thread-sky: color-mix(in oklch, var(--brand) 45%, var(--cocoa));
 }
 ```
 
@@ -61,8 +59,8 @@ Rules of dyeing:
 Most components read a local `--c` (surface color) and `--t` (thread/text color):
 
 ```html
-<button class="btn-patch" style="--c: var(--felt-rose)">Order</button>
-<div class="felt card" style="--c: var(--felt-leaf); --t: #3d4a2e">...</div>
+<button class="btn-patch" style="--c: var(--rose); --t: var(--thread-rose)">Order</button>
+<div class="felt card" style="--c: var(--leaf); --t: var(--thread-leaf)">...</div>
 ```
 
 This is the entire theming API for one-off variation. No modifier class explosion.

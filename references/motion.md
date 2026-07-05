@@ -24,7 +24,7 @@ Rules:
 - Reveals run once per element per page load and remove their scaffolding afterward. This is intentional: the choreography represents the patch being placed on the board, an arrival, not a loop. A genuine full-page reload always replays it, since nothing persists across navigations; if a host environment restores a page from back-forward cache without re-running scripts, treat that the same as a fresh load rather than leaving elements in their revealed-but-unobserved state.
 - Stagger by DOM order comes free from the IntersectionObserver; do not add artificial delays beyond roughly 0.4s total per viewport. Use the `--sew-delay` custom property for hand-placed staggers within a single group (a grid of cards, a row of chips).
 - The settled state of a revealed element is `translate: none; rotate: none`, never a zero value. A zero transform still creates a stacking context, which permanently traps dropdown panels and tooltips inside the card under later sibling cards. Keep that invariant in any change to the reveal styles.
-- Add the one-line `ww-js` snippet to the document head (see `assets/starter.html`) so the pre-reveal hidden state applies before first paint. Without it, a slow first paint can show content, hide it, then reveal it, which reads as a glitch rather than an arrival.
+- Add the one-line `ww-js` snippet to the document head (see `assets/starter.html`) so the pre-reveal hidden state applies before first paint. Without it, a slow first paint can show content, hide it, then reveal it, which reads as a glitch rather than an arrival. Pair it with the starter's `onerror` disarm on the kit script tag so a failed script load cannot leave content hidden.
 
 ## Spring vocabulary
 

@@ -19,12 +19,14 @@ Fixes and additions; no class renames or removals. Migration is a wholesale repl
 - Revealed `.sew` elements now settle to `translate: none; rotate: none` instead of zero values. A zero transform kept a permanent stacking context on every revealed card, which painted open dropdown flaps and tooltips underneath later sibling cards. No project action needed beyond replacing the kit files.
 - `dialog.pinned` now carries the felt material itself and animates directly on `[open]`. Previously the kit styled an inner `.patch` element that was never documented or defined, so pinned modals rendered with a transparent background and no drop-in animation. Check each `dialog.pinned` in the project: content may sit directly inside the dialog; if an inner wrapper div exists only to be the patch, remove it. Dye with `--c` on the dialog as with any felt.
 - `.buttonhole` and `.strands` are now handled by delegated listeners like every other behavior, so instances added after load work. Remove any project-side re-initialization that existed to work around this.
+- `.sew` elements added to the DOM after load now arm their reveal automatically (a MutationObserver watches for them), matching the kit's promise that late-mounted elements are live. An element that is re-parented after revealing replays its arrival.
+- Tab groups sync panel visibility to the selected tab when the script initializes, so markup can ship every `.tab-panel` visible and no-JS readers still get all the content. Markup that pre-hides panels with `hidden` keeps working; prefer removing those attributes so the panels read without JavaScript.
 - New `.pompom` decorative component and `.embroider` display-heading treatment; see `references/dictionary.md`.
 - Tooltip bubbles and their threads now carry an explicit z-index so they cannot slip under adjacent patches.
-- `select.pocket` sizes its thread-pull chevron explicitly and keeps the fiber grain layer. Previously the chevron inherited the pocket's 140px grain tile size and rendered as a giant glyph.
+- `select.pocket` sizes its thread-pull chevron explicitly, keeps the fiber grain layer, and draws the chevron with a light underlayer so it stays legible on night pockets. Previously the chevron inherited the pocket's 140px grain tile size and rendered as a giant glyph.
 - The spool fill now dyes from `--c` like every other component (`--fc` still wins when set, as a deprecated alias). Previously `--c` on a spool silently did nothing.
-- Felt, knit, and patch buttons transition `background-color` over 0.4s so the night flip reads as one lamp dimming rather than surfaces snapping one by one.
-- New recommended head snippet (`assets/starter.html`): a one-line inline script that adds `ww-js` before first paint, eliminating the visible flash of content that could appear before reveals armed on slow paints. Add it right after the stylesheet link in projects using `.sew`.
+- Felt, knit, and patch buttons transition `background-color` and `color` over 0.4s so the dominant surfaces cross-fade with the board during the night flip instead of snapping.
+- New recommended head snippet (`assets/starter.html`): a one-line inline script that adds `ww-js` before first paint, eliminating the visible flash of content that could appear before reveals armed on slow paints. Add it right after the stylesheet link in projects using `.sew`, and pair it with the starter's `onerror` disarm on the kit script tag so a failed script load cannot leave content hidden.
 
 ### 1.0.0
 

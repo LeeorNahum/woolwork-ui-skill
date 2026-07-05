@@ -328,9 +328,11 @@ dialog.pinned[open]{animation:pindrop .55s var(--spring)}
 .snap-radio:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px}
 /* ---------- SELECT: a pocket with a thread pull ---------- */
 select.pocket{appearance:none;cursor:pointer;padding-right:40px;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10'><path d='M2 2 L8 8 L14 2' fill='none' stroke='%237a5c49' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"),var(--grain);
+  /* The thread pull is drawn twice, a light copy under a cocoa copy, so it
+     stays legible on both day and night pockets (a data URI cannot read tokens). */
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='12'><path d='M2 3.2 L8 9.2 L14 3.2' fill='none' stroke='rgba(255,252,242,0.55)' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/><path d='M2 2 L8 8 L14 2' fill='none' stroke='%237a5c49' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"),var(--grain);
   background-repeat:no-repeat,repeat;background-position:right 14px center,0 0;
-  background-size:16px 10px,140px 140px;background-blend-mode:normal,overlay}
+  background-size:16px 12px,140px 140px;background-blend-mode:normal,overlay}
 textarea.pocket{min-height:96px;resize:vertical;font:inherit}
 /* ---------- TABS: felt folder tabs stitched onto a shared panel ---------- */
 .tabs{display:flex;gap:8px;padding:0 14px;position:relative;z-index:1}
@@ -451,9 +453,10 @@ figure.photo img{display:block;max-width:100%;border-radius:8px;filter:saturate(
 figure.photo figcaption{padding:7px 4px 2px;font-size:.85rem;color:var(--ink-soft);text-align:center}
 /* ---------- EMBROIDER: display lettering as raised thread ----------
    The lifted-thread shadow pair makes a heading read as embroidery on the felt:
-   light catches the top of the stitches, occlusion falls below. Ink stays a token. */
+   light catches the top of the stitches (highlight above the glyph edge),
+   occlusion falls below. Ink stays a token. */
 .embroider{font-family:var(--font-display);color:var(--ink);
-  text-shadow:0 2px 0 var(--hi),0 -1px 0 var(--lo)}
+  text-shadow:0 -1px 0 var(--hi),0 2px 0 var(--lo)}
 /* ---------- BOARD-LEVEL DETAILS: selection and scrollbars are dyed too ---------- */
 ::selection{background:color-mix(in srgb,var(--plum) 45%,transparent);color:var(--ink)}
 body.board{scrollbar-color:var(--cocoa) color-mix(in srgb,var(--board) 80%,black 6%)}

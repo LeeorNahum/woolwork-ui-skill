@@ -13,18 +13,19 @@ Woolwork is deliberately framework-agnostic: one CSS file of tokens plus compone
 ```html
 <link rel="stylesheet" href="/woolwork/woolwork.css">
 <script>document.documentElement.classList.add('ww-js')</script>
-<script src="/woolwork/woolwork.js" defer></script>
+<script src="/woolwork/woolwork.js" defer
+        onerror="document.documentElement.classList.remove('ww-js')"></script>
 ```
 
-Done. `defer` is fine; the CSS carries the first paint. The inline one-liner marks the document as script-capable before first paint so `.sew` elements never flash visible before their reveal; include it only alongside the kit script, since if the kit script never loads, sewn elements would stay hidden.
+Done. `defer` is fine; the CSS carries the first paint. The inline one-liner marks the document as script-capable before first paint so `.sew` elements never flash visible before their reveal. Keep the `onerror` disarm with it: if the kit script fails to load after the stylesheet succeeded, the class comes off and the page falls back to fully visible content.
 
 ## Next.js (App Router)
 
 - Import `woolwork.css` in the root `layout.tsx` (global CSS).
-- Load the script once in a small client component, or paste the file into `app/woolwork-client.tsx` behind `"use client"` and call its init in a `useEffect` with an idempotency guard (`if (window.__ww) return`).
+- Import `woolwork.js` once from a small `"use client"` component rendered in the root layout. It is a self-running script with no exported init, and module import semantics already guarantee it executes only once per page load.
 - Server components can emit Woolwork classes freely; there is no client dependency for appearance.
-- The `.sew` reveal system uses `IntersectionObserver`, which only exists client-side; the CSS gives `.sew` elements full opacity by default and the JS opts them into the reveal, so SSR output is never invisible if JS fails. Keep this order (CSS visible by default, JS hides then reveals) if you modify the kit.
-- To avoid a flash of revealed-then-hidden content on slow first paints, add the `ww-js` class before paint with an inline script rendered ahead of the page body (in Next.js, an inline `beforeInteractive` script). Never add the class in server markup itself: markup is shared with non-JS clients, and they must keep the fully visible fallback.
+- The `.sew` reveal system uses `IntersectionObserver`, which only exists client-side; the CSS gives `.sew` elements full opacity by default and the JS opts them into the reveal, so SSR output is never invisible when scripts are disabled or stripped. Keep this order (CSS visible by default, JS hides then reveals) if you modify the kit.
+- To avoid a flash of revealed-then-hidden content on slow first paints, add the `ww-js` class before paint with an inline script rendered ahead of the page body (in Next.js, an inline `beforeInteractive` script), and pair it with an error handler on the kit script load that removes the class, so a stylesheet-loaded-but-script-failed page falls back to visible content. Never add the class in server markup itself: markup is shared with non-JS clients, and they must keep the fully visible fallback.
 
 ## Vite / SPA (React, Vue, Svelte)
 
@@ -43,8 +44,9 @@ Two workable postures:
 // tailwind.config.js
 theme: { extend: { colors: {
   board: "var(--board)",
-  felt: { cream: "var(--felt-cream)", rose: "var(--felt-rose)", leaf: "var(--felt-leaf)" },
-  thread: "var(--thread)", ink: "var(--ink)",
+  cream: "var(--cream)", rose: "var(--rose)", leaf: "var(--leaf)",
+  thread: { rose: "var(--thread-rose)", leaf: "var(--thread-leaf)" },
+  ink: "var(--ink)",
 }}}
 ```
 

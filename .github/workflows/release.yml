@@ -19,7 +19,7 @@ jobs:
           TAG="${GITHUB_REF_NAME#v}"
           fail=0
           check() {
-            if ! grep -qF "$2" "$1"; then
+            if ! grep -qF -- "$2" "$1"; then
               echo "::error file=$1::expected to find '$2' in $1"
               fail=1
             fi
