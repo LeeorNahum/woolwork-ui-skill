@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Woolwork Starter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./woolwork.css">
+</head>
+<body class="board">
+
+  <header class="felt sew" style="--c: var(--cream); max-width: 720px; margin: 40px auto 0; padding: 24px 28px;">
+    <h1 style="margin: 0 0 4px;">Woolwork starter</h1>
+    <p style="margin: 0; color: var(--ink-soft);">A minimal page on the craft table. Every element is felt, thread, or yarn, sewn to the board.</p>
+  </header>
+
+  <main style="max-width: 720px; margin: 24px auto 60px; display: grid; gap: 20px;">
+
+    <section class="felt stitch sew" style="--c: var(--butter); padding: 22px 26px;">
+      <h2 style="margin: 0 0 8px;">A stitched card</h2>
+      <p>This card arrived with the place-then-stitch reveal: it settles onto the board, then its running stitch draws around the edge.</p>
+      <button class="btn-patch" style="--c: var(--rose); --t: var(--thread-rose);">A patch button</button>
+    </section>
+
+    <hr class="seam">
+
+    <section class="felt sew" style="--c: var(--leaf); --t: var(--thread-leaf); padding: 22px 26px;">
+      <h2 style="margin: 0 0 8px;">A form pocket</h2>
+      <label for="starter-name">Your name</label>
+      <input id="starter-name" class="pocket" type="text" placeholder="Slip it into the pocket" style="margin-top: 6px;">
+      <div style="margin-top: 14px; display: flex; align-items: center; gap: 10px;">
+        <input id="starter-check" type="checkbox" class="sew-check">
+        <label for="starter-check">Sew this down</label>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="./woolwork.js" defer></script>
+</body>
+</html>

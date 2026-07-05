@@ -1,0 +1,453 @@
+/* ============ WOOLWORK v1.0.0 ============
+   A wool, felt, and yarn material system for the web.
+   Laws: one top-left light · nothing flat · nothing straight · everything attached · everything soft. */
+:root{
+  --ww-version:"1.0.0";
+  /* board + dyed wool palette (heathered by texture, never flat) */
+  --board:#e3ddd0; --cream:#f6efdf; --rose:#e2707e; --butter:#f0c05a; --leaf:#7fae6a;
+  --sky:#6fa8c9; --plum:#9a7bb0; --cocoa:#7a5c49; --ink:#463527; --ink-soft:#7d6a56;
+  --thread-rose:#a94856; --thread-butter:#b08428; --thread-leaf:#4f7a3e;
+  --thread-sky:#3f728f; --thread-plum:#6b5180; --thread-cream:#bfa886;
+  --hi:rgba(255,252,242,.38); --lo:rgba(64,44,32,.22); --paper:#fbf6ea;
+  /* seam-free noise tiles: every frequency is an integer number of cycles per tile */
+  --grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0.5 0.5 0 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --streak:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='s'><feTurbulence type='fractalNoise' baseFrequency='0.0125 0.45' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.4 0.4 0.4 0 0'/></filter><rect width='100%' height='100%' filter='url(%23s)'/></svg>");
+  /* stockinette: columns of V loops, shadow leg under highlight leg */
+  --knitpat:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='13' height='15'><g fill='none' stroke-linecap='round'><path d='M2.5 15 Q3 7 6.5 1.5' stroke='rgba(0,0,0,0.28)' stroke-width='5'/><path d='M10.5 15 Q10 7 6.5 1.5' stroke='rgba(0,0,0,0.28)' stroke-width='5'/><path d='M2.5 14 Q3 6.5 6.5 1' stroke='rgba(255,255,255,0.30)' stroke-width='3.4'/><path d='M10.5 14 Q10 6.5 6.5 1' stroke='rgba(255,244,225,0.16)' stroke-width='3.4'/></g></svg>");
+  /* serpentine running-stitch seam: thread over (bright), then under (faint, lower) */
+  --seampat:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='14'><path d='M2 6.5 L13 6.5' stroke='white' stroke-width='2.6' stroke-linecap='round'/><path d='M19 8.5 L29 8.5' stroke='white' stroke-width='2.4' stroke-linecap='round' opacity='0.30'/></svg>");
+  --spring:linear(0,.32 8%,.84 19%,1.055 30%,1.014 43%,.986 56%,1.003 73%,1);
+  --font-display:"Baloo 2",ui-rounded,"Arial Rounded MT Bold","Segoe UI",sans-serif;
+  --font-body:"Nunito",ui-rounded,"Segoe UI",system-ui,sans-serif;
+}
+[data-theme="night"]{
+  --board:#332e42; --cream:#524a63; --paper:#544b66;
+  --ink:#f2ecdf; --ink-soft:#c3b8d4;
+  --hi:rgba(220,215,255,.14); --lo:rgba(10,6,20,.5);
+  --cocoa:#cfc2b2;
+  --rose:#b65a6b; --butter:#b8934a; --leaf:#66904f; --sky:#54859f; --plum:#7d6394;
+  --thread-cream:#9c92b5; --thread-rose:#f2b2bd; --thread-butter:#ecd096;
+  --thread-leaf:#bcd8a8; --thread-sky:#aed2e8; --thread-plum:#d4bfe6;
+}
+*{box-sizing:border-box}
+body.board{
+  margin:0;color:var(--ink);font-family:var(--font-body);
+  background-color:var(--board);
+  /* burlap board: cross weave + grain, all integer-cycle tiles */
+  background-image:
+    repeating-linear-gradient(0deg,rgba(255,252,242,.05) 0 2px,transparent 2px 7px),
+    repeating-linear-gradient(90deg,rgba(64,44,32,.05) 0 2px,transparent 2px 7px),
+    var(--grain);
+  background-size:7px 7px,7px 7px,140px 140px;
+  background-blend-mode:normal,normal,overlay;
+  min-height:100vh;-webkit-font-smoothing:antialiased;transition:background-color .4s,color .4s;
+}
+h1,h2,h3,.display{font-family:var(--font-display)}
+/* ---------- MATERIAL: FELT PATCH ---------- */
+.felt{color:var(--ink);
+  position:relative;background-color:var(--c,var(--cream));
+  background-image:var(--streak),var(--grain);
+  background-blend-mode:soft-light,overlay;background-size:240px 240px,140px 140px;
+  border-radius:16px 19px 15px 20px/18px 15px 21px 16px;
+  box-shadow:inset 0 2px 0 var(--hi),inset 2px 0 0 rgba(255,252,242,.12),
+    inset 0 -4px 7px var(--lo),0 2px 2px -1px rgba(30,20,12,.3),0 10px 16px -10px rgba(30,20,12,.3);
+}
+.felt.deep{box-shadow:inset 0 3px 0 var(--hi),inset 0 -5px 9px var(--lo),
+  0 3px 2px -1px rgba(30,20,12,.35),0 16px 26px -14px rgba(30,20,12,.4)}
+/* ---------- MATERIAL: KNIT ---------- */
+.knit{
+  position:relative;color:var(--ink);background-color:var(--c,var(--rose));
+  background-image:var(--knitpat),var(--grain);
+  background-size:13px 15px,140px 140px;background-blend-mode:normal,overlay;
+  border-radius:14px 17px 13px 18px/16px 13px 18px 14px;
+  box-shadow:inset 0 3px 0 var(--hi),inset 0 -5px 8px var(--lo),
+    0 2px 2px -1px rgba(30,20,12,.3),0 12px 18px -10px rgba(30,20,12,.35);
+}
+/* ---------- MATERIAL: YARN STRAND ---------- */
+.yarn{height:9px;border-radius:6px;background-color:var(--c,var(--rose));
+  background-image:repeating-linear-gradient(60deg,rgba(255,255,255,.35) 0 4px,rgba(0,0,0,.18) 4px 8px,transparent 8px 12px);
+  box-shadow:inset 0 2px 1px rgba(255,255,255,.35),inset 0 -2px 2px rgba(0,0,0,.28),0 2px 2px rgba(30,20,12,.28)}
+/* ---------- RUNNING STITCH (sewn attachment) ---------- */
+.stitch{position:relative}
+.stitch::after{content:"";position:absolute;inset:8px;pointer-events:none;
+  border:2.5px dashed var(--t,var(--cocoa));opacity:.8;border-radius:inherit;
+  filter:drop-shadow(0 1px 0 rgba(255,252,242,.35))}
+.stitch.unstitched::after{opacity:0;transition:opacity .25s}
+/* ---------- SEWN PATCH BUTTON ----------
+   Press feedback is a LOCAL dent (wool-press deepens) plus 1.5px settle.
+   No scaling, so text and stitches never shimmer or crawl. */
+.btn-patch{
+  --c:var(--butter);--t:var(--thread-butter);
+  position:relative;display:inline-block;border:0;cursor:pointer;color:var(--ink);
+  font:700 1rem/1 var(--font-display);padding:14px 24px 15px;
+  background-color:var(--c);background-image:var(--streak),var(--grain);
+  background-blend-mode:soft-light,overlay;background-size:240px 240px,140px 140px;
+  border-radius:14px 17px 13px 18px/16px 13px 18px 14px;
+  box-shadow:inset 0 2px 0 var(--hi),inset 0 -4px 6px var(--lo),
+    0 3px 2px -1px rgba(30,20,12,.35),0 9px 12px -8px rgba(30,20,12,.35);
+  transition:translate .5s var(--spring),box-shadow .22s ease;
+}
+.btn-patch::after{content:"";position:absolute;inset:6px;border:2.5px dashed var(--t);
+  border-radius:inherit;opacity:.85;pointer-events:none}
+.btn-patch:hover{translate:0 -1.5px;
+  box-shadow:inset 0 2px 0 var(--hi),inset 0 -4px 6px var(--lo),
+    0 4px 3px -1px rgba(30,20,12,.3),0 14px 18px -9px rgba(30,20,12,.4)}
+.btn-patch:active{translate:0 1.5px;transition-duration:.08s;
+  box-shadow:inset 0 3px 6px rgba(30,18,10,.32),inset 0 -2px 3px var(--lo),0 1px 1px rgba(30,20,12,.3)}
+.btn-patch:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:3px}
+.btn-patch.rose{--c:var(--rose);--t:var(--thread-rose)}
+.btn-patch.leaf{--c:var(--leaf);--t:var(--thread-leaf)}
+.btn-patch.sky{--c:var(--sky);--t:var(--thread-sky)}
+/* ---------- SEWN BUTTON (round, 4 holes, thread cross) ---------- */
+.sewn-button{--c:var(--sky);position:relative;width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.5),transparent 46%),
+    radial-gradient(circle at 50% 50%,var(--c) 62%,color-mix(in srgb,var(--c) 62%,black) 100%);
+  box-shadow:inset 0 -3px 5px rgba(0,0,0,.3),inset 0 2px 2px rgba(255,255,255,.4),
+    0 3px 3px -1px rgba(30,20,12,.4),0 8px 10px -7px rgba(30,20,12,.35);
+  transition:translate .5s var(--spring),box-shadow .2s}
+.sewn-button::before{content:"";position:absolute;inset:0;border-radius:50%;
+  box-shadow:inset 0 0 0 4px rgba(0,0,0,.07),inset 0 0 0 5px rgba(255,255,255,.14);
+  background:
+    radial-gradient(circle 3px at 36% 38%,rgba(30,18,10,.72) 96%,transparent),
+    radial-gradient(circle 3px at 64% 38%,rgba(30,18,10,.72) 96%,transparent),
+    radial-gradient(circle 3px at 36% 64%,rgba(30,18,10,.72) 96%,transparent),
+    radial-gradient(circle 3px at 64% 64%,rgba(30,18,10,.72) 96%,transparent)}
+.sewn-button::after{content:"";position:absolute;inset:22%;pointer-events:none;
+  background:
+    linear-gradient(45deg,transparent 41%,var(--tc,var(--cream)) 41% 59%,transparent 59%),
+    linear-gradient(-45deg,transparent 41%,var(--tc,var(--cream)) 41% 59%,transparent 59%);
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.sewn-button:active{translate:0 2px;box-shadow:inset 0 -2px 4px rgba(0,0,0,.35),0 1px 1px rgba(30,20,12,.35)}
+.sewn-button:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:3px}
+/* ---------- CHECKBOX: a button that gets SEWN when checked ----------
+   Unchecked: empty buttonholes. Checked: a thread cross is stitched on with a spring.
+   The four holes sit at 34%/66% of the 30px box, i.e. a 9.6px square centered on the
+   box. Each stroke is anchored at one hole and rotates to the diagonally opposite hole,
+   so growing the stroke reads as the thread traveling hole to hole, never off-center. */
+.sew-check{appearance:none;width:30px;height:30px;border-radius:50%;cursor:pointer;position:relative;flex:none;
+  background:
+    radial-gradient(circle 2.4px at 34% 34%,rgba(30,18,10,.7) 96%,transparent),
+    radial-gradient(circle 2.4px at 66% 34%,rgba(30,18,10,.7) 96%,transparent),
+    radial-gradient(circle 2.4px at 34% 66%,rgba(30,18,10,.7) 96%,transparent),
+    radial-gradient(circle 2.4px at 66% 66%,rgba(30,18,10,.7) 96%,transparent),
+    radial-gradient(circle at 34% 30%,rgba(255,255,255,.5),transparent 46%),
+    radial-gradient(circle,var(--c,var(--cream)) 62%,color-mix(in srgb,var(--c,var(--cream)) 62%,black));
+  box-shadow:inset 0 -2px 4px rgba(0,0,0,.28),inset 0 2px 2px rgba(255,255,255,.4),0 2px 2px rgba(30,20,12,.3);
+  transition:translate .5s var(--spring)}
+.sew-check::before,.sew-check::after{content:"";position:absolute;top:10.2px;height:3px;width:13.6px;
+  margin-top:-1.5px;border-radius:2px;background:var(--thread-rose);pointer-events:none;
+  box-shadow:0 1px 1px rgba(0,0,0,.3);transition:transform .13s ease-out}
+.sew-check::before{left:10.2px;transform-origin:left center;transform:rotate(45deg) scaleX(0);transition-delay:.13s}
+.sew-check::after{left:19.8px;transform-origin:left center;transform:rotate(135deg) scaleX(0)}
+.sew-check:checked::before{transform:rotate(45deg) scaleX(1);transition-delay:0s}
+.sew-check:checked::after{transform:rotate(135deg) scaleX(1);transition-delay:.13s}
+/* press phase: stroke A snaps in while the pointer is down (checking),
+   or stroke B unpicks while the pointer is down (unchecking) */
+.sew-check.pre:not(:checked)::before{transform:rotate(45deg) scaleX(1);transition-delay:0s}
+.sew-check.pre:checked::after{transform:rotate(135deg) scaleX(0);transition-delay:0s}
+.sew-check:active{translate:0 1.5px}
+.sew-check:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px}
+/* ---------- BUTTONHOLE TOGGLE (knob is a small sewn button) ---------- */
+.buttonhole{position:relative;width:66px;height:32px;border-radius:18px;cursor:pointer;border:0;flex:none;
+  background-color:color-mix(in srgb,var(--cream) 78%,var(--board));
+  background-image:var(--grain);background-blend-mode:overlay;background-size:140px 140px;
+  box-shadow:inset 0 3px 6px rgba(30,18,10,.3),inset 0 -1px 0 rgba(255,252,242,.4);
+  transition:background-color .3s}
+.buttonhole::before{content:"";position:absolute;inset:5px 8px;border-radius:12px;
+  border:2px dashed color-mix(in srgb,var(--cocoa) 55%,transparent)}
+.buttonhole .knob{position:absolute;top:3px;left:4px;width:26px;height:26px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.55),transparent 46%),
+    radial-gradient(circle,var(--butter) 62%,color-mix(in srgb,var(--butter) 62%,black));
+  box-shadow:inset 0 -2px 4px rgba(0,0,0,.3),0 2px 3px rgba(30,20,12,.4);
+  transition:translate .5s var(--spring)}
+.buttonhole .knob::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:
+    radial-gradient(circle 1.8px at 38% 40%,rgba(30,18,10,.7) 96%,transparent),
+    radial-gradient(circle 1.8px at 62% 40%,rgba(30,18,10,.7) 96%,transparent),
+    radial-gradient(circle 1.8px at 38% 62%,rgba(30,18,10,.7) 96%,transparent),
+    radial-gradient(circle 1.8px at 62% 62%,rgba(30,18,10,.7) 96%,transparent)}
+.buttonhole[aria-pressed="true"]{background-color:color-mix(in srgb,var(--leaf) 45%,var(--cream))}
+.buttonhole[aria-pressed="true"] .knob{translate:32px 0}
+.buttonhole:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:3px}
+/* ---------- POCKET INPUT: a slit cut into the felt, no trim ---------- */
+.pocket{position:relative;width:100%;padding:13px 16px;color:var(--ink);
+  font:600 1rem var(--font-body);border:0;border-radius:10px 12px 14px 15px/10px 9px 15px 14px;
+  background-color:color-mix(in srgb,var(--cream) 86%,black 4%);
+  background-image:var(--grain);background-blend-mode:overlay;background-size:140px 140px;
+  box-shadow:inset 0 7px 8px -4px rgba(30,18,10,.42),inset 0 2px 0 rgba(30,18,10,.22),
+    inset 0 -1px 0 rgba(255,252,242,.45),0 1px 0 rgba(255,252,242,.45);
+  transition:box-shadow .2s}
+.pocket:focus{outline:none;
+  box-shadow:inset 0 7px 8px -4px rgba(30,18,10,.42),inset 0 2px 0 rgba(30,18,10,.22),
+    0 0 0 3px color-mix(in srgb,var(--rose) 40%,transparent)}
+.pocket::placeholder{color:color-mix(in srgb,var(--ink) 45%,transparent)}
+/* ---------- SLIDER: a bead of yarn on a stitched channel ---------- */
+.bead-slider{appearance:none;width:100%;height:26px;background:transparent;cursor:pointer}
+.bead-slider::-webkit-slider-runnable-track{height:12px;border-radius:8px;
+  background:color-mix(in srgb,var(--cream) 82%,black 6%);
+  box-shadow:inset 0 3px 5px rgba(30,18,10,.3),inset 0 -1px 0 rgba(255,252,242,.4)}
+.bead-slider::-moz-range-track{height:12px;border-radius:8px;
+  background:color-mix(in srgb,var(--cream) 82%,black 6%);
+  box-shadow:inset 0 3px 5px rgba(30,18,10,.3)}
+.bead-slider::-webkit-slider-thumb{appearance:none;width:26px;height:26px;margin-top:-7px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.5),transparent 45%),
+    repeating-conic-gradient(from 15deg,rgba(255,255,255,.22) 0 12deg,rgba(0,0,0,.14) 12deg 24deg),var(--rose);
+  box-shadow:inset 0 -3px 5px rgba(0,0,0,.3),0 3px 3px rgba(30,20,12,.4)}
+.bead-slider::-moz-range-thumb{width:26px;height:26px;border:0;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.5),transparent 45%),
+    repeating-conic-gradient(from 15deg,rgba(255,255,255,.22) 0 12deg,rgba(0,0,0,.14) 12deg 24deg),var(--rose);
+  box-shadow:inset 0 -3px 5px rgba(0,0,0,.3),0 3px 3px rgba(30,20,12,.4)}
+.bead-slider:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px}
+/* ---------- SPOOL: read-only progress, yarn knitting across ---------- */
+.spool{position:relative;height:16px;border-radius:10px;
+  background:color-mix(in srgb,var(--cream) 82%,black 6%);
+  box-shadow:inset 0 3px 5px rgba(30,18,10,.3)}
+.spool .fill{position:absolute;inset:3px auto 3px 3px;width:var(--p,60%);border-radius:6px;
+  background-color:var(--fc,var(--rose));
+  background-image:repeating-linear-gradient(60deg,rgba(255,255,255,.35) 0 4px,rgba(0,0,0,.18) 4px 8px,transparent 8px 12px);
+  box-shadow:inset 0 2px 1px rgba(255,255,255,.35),inset 0 -2px 2px rgba(0,0,0,.28);
+  transition:width .6s var(--spring)}
+.spool .fill::after{content:"";position:absolute;right:-9px;top:50%;width:20px;height:20px;margin-top:-10px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.45),transparent 45%),
+    repeating-conic-gradient(from 20deg,rgba(255,255,255,.25) 0 14deg,rgba(0,0,0,.15) 14deg 28deg),var(--fc,var(--rose));
+  box-shadow:0 2px 3px rgba(30,20,12,.4)}
+/* ---------- WOVEN LABEL (chip / badge / tab): a clothing label tacked
+   down at each end with a single stitch (the two dots are tack stitches) */
+.tag{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;font:700 .8rem var(--font-display);
+  color:var(--ink);background:var(--paper);border-radius:4px 6px 5px 4px;position:relative;
+  background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.05) 0 1px,transparent 1px 3px),
+    repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 1px,transparent 1px 3px);
+  box-shadow:0 1px 1px rgba(30,20,12,.3),inset 0 0 0 1px rgba(122,92,73,.16)}
+.tag::before,.tag::after{content:"";position:absolute;top:50%;width:6px;height:3px;margin-top:-1.5px;border-radius:2px;
+  background:var(--thread-cream);box-shadow:0 1px 1px rgba(30,20,12,.35)}
+.tag::before{left:4px}.tag::after{right:4px}
+/* ---------- THREAD LINK: loose thread pulls taut on hover;
+   a visited link stays neatly sewn (straight dashed backstitch) ---------- */
+a.thread-link{color:var(--thread-sky);font-weight:700;text-decoration:none;padding-bottom:4px;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='7'><path d='M0 3.5 Q6 0.5 12 3.5 T24 3.5' fill='none' stroke='%233f728f' stroke-width='2' stroke-linecap='round'/></svg>") repeat-x left bottom/24px 7px}
+a.thread-link:hover{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='7'><path d='M0 5 L24 5' fill='none' stroke='%23a94856' stroke-width='2.4' stroke-linecap='round'/></svg>")}
+a.thread-link:visited{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='7'><path d='M1 5 L9 5' fill='none' stroke='%236b5180' stroke-width='2.4' stroke-linecap='round'/></svg>")}
+/* ---------- SEAM DIVIDER: running stitch across a pressed crease ---------- */
+.seam{height:14px;border:0;position:relative}
+.seam::before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;
+  background:linear-gradient(to bottom,var(--lo),var(--hi));border-radius:1px}
+.seam::after{content:"";position:absolute;inset:0;background:var(--t,var(--cocoa));
+  -webkit-mask:var(--seampat) repeat-x center/32px 14px;mask:var(--seampat) repeat-x center/32px 14px}
+/* ---------- ZIPPER ACCORDION: expanding literally unzips ---------- */
+.zip{border-radius:14px;overflow:hidden}
+.zip>summary{list-style:none;cursor:pointer;position:relative;display:flex;align-items:center;gap:12px;
+  padding:13px 18px;font:700 1rem var(--font-display);color:var(--ink)}
+.zip>summary::-webkit-details-marker{display:none}
+.zip>summary .teeth{flex:1;height:12px;border-radius:3px;position:relative;
+  background:
+    repeating-linear-gradient(90deg,#c8b98f 0 4px,#9d8f6b 4px 5px,transparent 5px 8px) 0 0/8px 5px no-repeat,
+    repeating-linear-gradient(90deg,#c8b98f 0 4px,#9d8f6b 4px 5px,transparent 5px 8px) 4px 7px/calc(100% - 4px) 5px no-repeat;
+  background-size:100% 5px,100% 5px;filter:drop-shadow(0 1px 1px rgba(30,20,12,.35));
+  transition:gap .3s}
+.zip[open]>summary .teeth{background-position:0 -2px,4px 9px}
+.zip>summary .pull{width:12px;height:22px;border-radius:6px 6px 8px 8px;flex:none;
+  background:linear-gradient(#d8c9a0,#a3946e);box-shadow:inset 0 1px 1px rgba(255,255,255,.5),0 2px 2px rgba(30,20,12,.4);
+  position:relative;transition:rotate .4s var(--spring)}
+.zip>summary .pull::after{content:"";position:absolute;left:3px;top:4px;width:6px;height:6px;border-radius:50%;
+  background:rgba(60,45,25,.5);box-shadow:inset 0 1px 1px rgba(0,0,0,.4)}
+.zip[open]>summary .pull{rotate:18deg}
+.zip .lining{padding:6px 18px 18px;line-height:1.55}
+/* ---------- DROPDOWN: a fabric flap that unfolds downward ---------- */
+.flap{position:relative;display:inline-block}
+.flap[open]{z-index:60}
+.flap>summary{list-style:none;cursor:pointer}
+.flap>summary::-webkit-details-marker{display:none}
+.flap .panel{position:absolute;left:0;top:calc(100% + 8px);min-width:200px;z-index:60;padding:10px;
+  transform-origin:top center;display:grid;gap:6px}
+.flap[open] .panel{animation:unfold .45s var(--spring)}
+@keyframes unfold{from{transform:perspective(700px) rotateX(-72deg);opacity:.4}to{transform:none;opacity:1}}
+.flap .panel button{display:block;width:100%;text-align:left;border:0;cursor:pointer;color:var(--ink);
+  font:600 .95rem var(--font-body);padding:9px 12px;border-radius:9px;background:transparent}
+.flap .panel button:hover{background:color-mix(in srgb,var(--butter) 40%,transparent)}
+/* ---------- MODAL: a patch pinned over the board with safety pins ---------- */
+dialog.pinned{border:0;padding:0;background:transparent;max-width:min(92vw,460px);overflow:visible}
+dialog.pinned::backdrop{background:rgba(40,28,18,.45);backdrop-filter:blur(1.5px)}
+dialog.pinned .patch{padding:28px 26px 24px;position:relative}
+dialog.pinned[open] .patch{animation:pindrop .55s var(--spring)}
+@keyframes pindrop{from{transform:translateY(-26px) rotate(-2deg);opacity:0}to{transform:none;opacity:1}}
+.safety-pin{position:absolute;width:52px;height:16px;pointer-events:none;
+  background:linear-gradient(#e8e2d2,#b6ac93);border-radius:8px;
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.7),inset 0 -1px 2px rgba(60,45,25,.4),0 2px 2px rgba(30,20,12,.35)}
+.safety-pin::after{content:"";position:absolute;left:-4px;top:-2px;width:18px;height:18px;border-radius:50%;
+  border:4px solid #b6ac93;border-right-color:transparent}
+.safety-pin.tl{left:-14px;top:-7px;rotate:-24deg}
+.safety-pin.tr{right:-14px;top:-7px;rotate:24deg}
+/* ---------- TOOLTIP: a paper tag tied on with thread ---------- */
+[data-tip]{position:relative}
+[data-tip]::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 14px);translate:-50% 4px;
+  background:var(--paper);color:var(--ink);font:600 .78rem var(--font-body);padding:6px 10px;border-radius:6px 8px 7px 6px;
+  box-shadow:0 2px 3px rgba(30,20,12,.35),inset 0 0 0 1px rgba(122,92,73,.15);
+  white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s,translate .35s var(--spring)}
+[data-tip]::before{content:"";position:absolute;left:50%;bottom:100%;height:14px;width:2px;translate:-50%;
+  background:repeating-linear-gradient(to bottom,var(--thread-cream) 0 3px,transparent 3px 5px);
+  opacity:0;transition:opacity .2s}
+[data-tip]:hover::after,[data-tip]:focus-visible::after{opacity:1;translate:-50% 0}
+[data-tip]:hover::before,[data-tip]:focus-visible::before{opacity:1}
+/* ---------- HAMBURGER: three strands of yarn; open pulls them into a cross ---------- */
+.strands{width:46px;height:44px;border:0;cursor:pointer;background:transparent;position:relative;padding:0}
+.strands .yarn{position:absolute;left:7px;right:7px;height:6px;transition:translate .45s var(--spring),rotate .45s var(--spring),opacity .3s}
+.strands .yarn:nth-child(1){top:11px}
+.strands .yarn:nth-child(2){top:19px}
+.strands .yarn:nth-child(3){top:27px}
+.strands[aria-expanded="true"] .yarn:nth-child(1){translate:0 8px;rotate:45deg}
+.strands[aria-expanded="true"] .yarn:nth-child(2){opacity:0;translate:-8px 0}
+.strands[aria-expanded="true"] .yarn:nth-child(3){translate:0 -8px;rotate:-45deg}
+.strands:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px;border-radius:8px}
+/* ---------- TOAST: a note that slides in and gets tacked down ---------- */
+.toast{position:fixed;right:18px;bottom:18px;z-index:99;padding:14px 20px;font-weight:700;max-width:320px;
+  animation:tack .55s var(--spring)}
+@keyframes tack{from{translate:0 24px;rotate:2deg;opacity:0}to{translate:0 0;rotate:0deg;opacity:1}}
+.toast.leaving{transition:opacity .3s,translate .3s;opacity:0;translate:0 12px}
+/* ---------- RADIO: a snap fastener; only one snaps in per group ---------- */
+.snap-radio{appearance:none;width:26px;height:26px;border-radius:50%;cursor:pointer;position:relative;flex:none;
+  background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.55),transparent 48%),
+    radial-gradient(circle,var(--c,var(--cream)) 60%,color-mix(in srgb,var(--c,var(--cream)) 60%,black));
+  box-shadow:inset 0 -2px 3px rgba(0,0,0,.25),inset 0 2px 2px rgba(255,255,255,.4),0 2px 2px rgba(30,20,12,.3);
+  transition:box-shadow .25s ease,translate .5s var(--spring)}
+.snap-radio::after{content:"";position:absolute;inset:30%;border-radius:50%;opacity:0;
+  background:radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--thread-rose) 70%,white),var(--thread-rose));
+  box-shadow:inset 0 -1.5px 2px rgba(0,0,0,.35),0 1px 1px rgba(255,255,255,.3);
+  transform:scale(.5);transition:transform .4s var(--spring),opacity .2s}
+.snap-radio:checked{box-shadow:inset 0 2px 5px rgba(0,0,0,.35),inset 0 -1px 1px rgba(255,255,255,.2),0 1px 1px rgba(30,20,12,.25)}
+.snap-radio:checked::after{opacity:1;transform:scale(1)}
+.snap-radio:active{translate:0 1.5px}
+.snap-radio:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px}
+/* ---------- SELECT: a pocket with a thread pull ---------- */
+select.pocket{appearance:none;cursor:pointer;padding-right:40px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10'><path d='M2 2 L8 8 L14 2' fill='none' stroke='%237a5c49' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 14px center}
+textarea.pocket{min-height:96px;resize:vertical;font:inherit}
+/* ---------- TABS: felt folder tabs stitched onto a shared panel ---------- */
+.tabs{display:flex;gap:8px;padding:0 14px;position:relative;z-index:1}
+.tabs>button{border:0;cursor:pointer;color:var(--ink);font:700 .95rem var(--font-display);
+  padding:10px 18px 14px;margin-bottom:-6px;border-radius:12px 14px 0 0;
+  background-color:color-mix(in srgb,var(--c,var(--cream)) 72%,var(--board));
+  background-image:var(--grain);background-size:140px 140px;background-blend-mode:overlay;
+  box-shadow:inset 0 2px 0 var(--hi),0 -2px 3px -2px rgba(30,20,12,.3);
+  transition:translate .4s var(--spring),background-color .25s}
+.tabs>button[aria-selected="true"]{background-color:var(--c,var(--cream));translate:0 -3px;
+  box-shadow:inset 0 2px 0 var(--hi),0 -3px 4px -2px rgba(30,20,12,.35)}
+.tabs>button:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px}
+.tab-panel[hidden]{display:none}
+/* ---------- BREADCRUMBS: tags strung on one thread ---------- */
+.crumbs{display:flex;align-items:center;gap:0;flex-wrap:wrap;padding:0;margin:0;list-style:none;position:relative}
+.crumbs li{display:flex;align-items:center}
+.crumbs li+li::before{content:"";width:26px;height:3px;border-radius:2px;margin:0 2px;
+  background:var(--t,var(--cocoa));opacity:.55}
+.crumbs a,.crumbs span{display:inline-block;padding:5px 12px;border-radius:9px 11px 8px 12px;text-decoration:none;
+  color:var(--ink);font-weight:700;font-size:.9rem;
+  background-color:color-mix(in srgb,var(--c,var(--cream)) 80%,var(--board));
+  background-image:var(--grain);background-size:140px 140px;background-blend-mode:overlay;
+  box-shadow:inset 0 1px 0 var(--hi),inset 0 -2px 3px var(--lo),0 1px 1px rgba(30,20,12,.25)}
+.crumbs [aria-current]{background-color:var(--c,var(--butter));
+  box-shadow:inset 0 1px 0 var(--hi),inset 0 -2px 3px var(--lo),0 2px 2px rgba(30,20,12,.3)}
+/* ---------- PAGINATION: a row of small sewn patches; the current one is pressed in ---------- */
+.pages{display:flex;gap:8px;align-items:center;padding:0;margin:0;list-style:none}
+.pages a,.pages span{display:grid;place-items:center;min-width:36px;height:36px;padding:0 8px;border-radius:10px 12px 9px 13px;
+  text-decoration:none;color:var(--ink);font-weight:800;font-family:var(--font-display);
+  background-color:var(--c,var(--cream));background-image:var(--grain);background-size:140px 140px;background-blend-mode:overlay;
+  box-shadow:inset 0 2px 0 var(--hi),inset 0 -3px 4px var(--lo),0 2px 2px -1px rgba(30,20,12,.3);
+  transition:translate .4s var(--spring)}
+.pages a:active{translate:0 1.5px}
+.pages [aria-current]{background-color:var(--c,var(--butter));
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.28),inset 0 -1px 0 var(--hi),0 1px 1px rgba(30,20,12,.25)}
+/* ---------- TABLE: a quilt; the header is the woven band, rows part at seams ---------- */
+table.quilt{border-collapse:separate;border-spacing:0;width:100%;color:var(--ink);
+  border-radius:14px;overflow:hidden;
+  box-shadow:inset 0 2px 0 var(--hi),inset 0 -4px 7px var(--lo),0 2px 2px -1px rgba(30,20,12,.3),0 10px 16px -10px rgba(30,20,12,.35)}
+table.quilt th{font-family:var(--font-display);text-align:left;padding:12px 16px;
+  background-color:color-mix(in srgb,var(--c,var(--cream)) 65%,var(--cocoa) 18%);
+  background-image:repeating-linear-gradient(90deg,rgba(255,252,242,.14) 0 3px,rgba(30,18,10,.1) 3px 6px),var(--grain);
+  background-size:auto,140px 140px;background-blend-mode:normal,overlay}
+table.quilt td{padding:12px 16px;background-color:var(--c,var(--cream));
+  background-image:var(--grain);background-size:140px 140px;background-blend-mode:overlay;
+  border-top:2px dashed color-mix(in srgb,var(--t,var(--cocoa)) 42%,transparent)}
+table.quilt tbody tr:hover td{background-color:color-mix(in srgb,var(--c,var(--cream)) 88%,var(--cocoa))}
+/* ---------- CHIP: a mini felt patch for compact labels and filters ---------- */
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:0;cursor:default;
+  border-radius:9px 11px 8px 12px;color:var(--ink);font-weight:700;font-size:.85rem;
+  background-color:var(--c,var(--leaf));background-image:var(--grain);background-size:140px 140px;background-blend-mode:overlay;
+  box-shadow:inset 0 1px 0 var(--hi),inset 0 -2px 3px var(--lo),0 1px 1px rgba(30,20,12,.28)}
+/* ---------- AVATAR: a round patch with a whipstitched rim ---------- */
+.avatar{width:46px;height:46px;border-radius:50%;overflow:hidden;position:relative;flex:none;
+  background:var(--c,var(--sky));
+  box-shadow:inset 0 0 0 3px color-mix(in srgb,var(--t,var(--cocoa)) 55%,transparent),
+    inset 0 2px 2px rgba(255,255,255,.3),inset 0 -3px 4px var(--lo),0 2px 2px rgba(30,20,12,.3);
+  display:grid;place-items:center;font:800 1rem var(--font-display);color:var(--ink)}
+.avatar img{width:100%;height:100%;object-fit:cover;mix-blend-mode:luminosity;opacity:.9}
+/* ---------- NOTICE: a fabric strip pinned to the board ---------- */
+.notice{position:relative;padding:14px 18px 14px 40px;border-radius:11px 14px 10px 15px/13px 10px 15px 11px;color:var(--ink);
+  background-color:var(--c,var(--butter));background-image:var(--streak),var(--grain);
+  background-size:240px 240px,140px 140px;background-blend-mode:soft-light,overlay;
+  box-shadow:inset 0 2px 0 var(--hi),inset 0 -3px 5px var(--lo),0 2px 2px -1px rgba(30,20,12,.3),0 8px 12px -9px rgba(30,20,12,.35)}
+.notice::before{content:"";position:absolute;left:14px;top:14px;width:14px;height:14px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#f2ede2,#b8b0a0 70%,#8d8574);
+  box-shadow:0 2px 3px rgba(30,20,12,.4),inset 0 -1px 2px rgba(0,0,0,.25)}
+/* ---------- SPINNER: a ball of yarn winding ---------- */
+.spinner{width:34px;height:34px;border-radius:50%;position:relative;flex:none;
+  background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--c,var(--rose)) 70%,white),var(--c,var(--rose)) 55%,color-mix(in srgb,var(--c,var(--rose)) 60%,black));
+  box-shadow:inset 0 -2px 3px rgba(0,0,0,.3),0 2px 2px rgba(30,20,12,.3)}
+.spinner::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0 70%,rgba(255,252,242,.55) 78%,transparent 92%);
+  animation:wind 1.1s linear infinite}
+@keyframes wind{to{transform:rotate(360deg)}}
+/* ---------- BASTING: skeleton placeholders held by loose temporary stitches ---------- */
+.basting{border-radius:12px;min-height:1em;
+  background-color:color-mix(in srgb,var(--cream) 70%,var(--board));
+  background-image:var(--grain);background-size:140px 140px;background-blend-mode:overlay;
+  outline:2px dashed color-mix(in srgb,var(--cocoa) 40%,transparent);outline-offset:-6px;
+  animation:baste 1.4s ease-in-out infinite}
+@keyframes baste{0%,100%{opacity:.55}50%{opacity:.9}}
+/* ---------- CONTENT: quotes, code, keys, lists, photos ---------- */
+blockquote.selvedge{margin:16px 0;padding:4px 0 4px 20px;position:relative;color:var(--ink)}
+blockquote.selvedge::before{content:"";position:absolute;left:0;top:0;bottom:0;width:9px;border-radius:6px;
+  background-color:var(--c,var(--plum));
+  background-image:repeating-linear-gradient(60deg,rgba(255,255,255,.35) 0 4px,rgba(0,0,0,.18) 4px 8px,transparent 8px 12px);
+  box-shadow:inset 0 2px 1px rgba(255,255,255,.35),inset 0 -2px 2px rgba(0,0,0,.28)}
+code.pattern,kbd.pattern{font:600 .88em ui-monospace,monospace;padding:2px 7px;border-radius:6px;color:var(--ink);
+  background:color-mix(in srgb,var(--paper) 85%,var(--cocoa));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 2px rgba(30,20,12,.2),0 1px 1px rgba(30,20,12,.2)}
+kbd.pattern{box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -2px 0 rgba(30,20,12,.22),0 2px 2px rgba(30,20,12,.25)}
+pre.pattern{padding:14px 16px;border-radius:12px;overflow:auto;color:var(--ink);
+  font:600 .85rem/1.5 ui-monospace,monospace;
+  background-color:var(--paper);
+  background-image:repeating-linear-gradient(to bottom,transparent 0 22px,rgba(122,92,73,.12) 22px 23px);
+  box-shadow:inset 0 2px 4px rgba(30,20,12,.18),inset 0 -1px 0 rgba(255,255,255,.5),0 2px 2px rgba(30,20,12,.2)}
+ul.knots{list-style:none;padding-left:6px;margin:12px 0}
+ul.knots li{position:relative;padding-left:22px;margin:7px 0}
+ul.knots li::before{content:"";position:absolute;left:2px;top:.52em;width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 38% 32%,color-mix(in srgb,var(--t,var(--cocoa)) 55%,white),var(--t,var(--cocoa)));
+  box-shadow:inset 0 -1px 1px rgba(0,0,0,.3),0 1px 1px rgba(30,20,12,.25)}
+figure.photo{margin:0;display:inline-block;padding:10px 10px 8px;rotate:-.7deg;
+  background-color:var(--cream);background-image:var(--grain);background-size:140px 140px;background-blend-mode:overlay;
+  border-radius:12px 15px 11px 16px/14px 11px 16px 12px;
+  box-shadow:inset 0 2px 0 var(--hi),inset 0 -3px 5px var(--lo),0 3px 2px -1px rgba(30,20,12,.32),0 12px 18px -12px rgba(30,20,12,.4)}
+figure.photo img{display:block;max-width:100%;border-radius:8px;filter:saturate(.92) contrast(.97)}
+figure.photo figcaption{padding:7px 4px 2px;font-size:.85rem;color:var(--ink-soft);text-align:center}
+/* ---------- BOARD-LEVEL DETAILS: selection and scrollbars are dyed too ---------- */
+::selection{background:color-mix(in srgb,var(--plum) 45%,transparent);color:var(--ink)}
+body.board{scrollbar-color:var(--cocoa) color-mix(in srgb,var(--board) 80%,black 6%)}
+body.board::-webkit-scrollbar{width:14px}
+body.board::-webkit-scrollbar-track{background:color-mix(in srgb,var(--board) 80%,black 6%)}
+body.board::-webkit-scrollbar-thumb{background:var(--cocoa);border-radius:8px;border:3px solid color-mix(in srgb,var(--board) 80%,black 6%)}
+/* ---------- REVEAL CHOREOGRAPHY: place the patch, then stitch it on ----------
+   Visual only: opacity and transform, never layout. Content exists immediately
+   for selection, copying, scroll height, and no-JS rendering. */
+/* Hidden-then-revealed ONLY once JS has confirmed it is running (html.ww-js),
+   so server-rendered pages without JS stay fully visible. */
+.ww-js .sew{opacity:0;translate:0 12px;rotate:.35deg;
+  transition:opacity .45s ease var(--sew-delay,0s),translate .65s var(--spring) var(--sew-delay,0s),rotate .65s var(--spring) var(--sew-delay,0s)}
+.ww-js .sew.on{opacity:1;translate:0 0;rotate:0deg}
+.stitch-thread{position:absolute;top:8px;left:8px;pointer-events:none;overflow:visible}
+.stitch-thread rect{fill:none;stroke:var(--t,var(--cocoa));stroke-width:2.5;stroke-linecap:round;opacity:.85}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01s!important}
+  .ww-js .sew{opacity:1;translate:0 0;rotate:0deg}
+  .spinner::before{animation:none}
+  .basting{animation:none;opacity:.7}
+}
