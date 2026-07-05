@@ -1,4 +1,4 @@
-/* WOOLWORK v1.0.0 progressive enhancement.
+/* WOOLWORK v1.1.0 progressive enhancement.
    Everything renders without this file; it only adds motion and physics. */
 (function(){
   'use strict';
@@ -92,18 +92,19 @@
     });
   });
 
-  /* ---- Buttonhole toggles ---- */
-  document.querySelectorAll('.buttonhole').forEach(function(t){
-    t.addEventListener('click', function(){
+  /* ---- Buttonhole toggles and hamburger strands ----
+     Delegated like everything else, so toggles added after load are live too. */
+  document.addEventListener('click', function(e){
+    if(!e.target.closest) return;
+    var t = e.target.closest('.buttonhole');
+    if(t){
       t.setAttribute('aria-pressed', t.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
-    });
-  });
-
-  /* ---- Hamburger strands ---- */
-  document.querySelectorAll('.strands').forEach(function(b){
-    b.addEventListener('click', function(){
+      return;
+    }
+    var b = e.target.closest('.strands');
+    if(b){
       b.setAttribute('aria-expanded', b.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
-    });
+    }
   });
 
   /* ---- Fabric flap dropdowns: close on outside pointerdown ---- */

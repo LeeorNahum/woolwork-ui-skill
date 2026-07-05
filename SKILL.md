@@ -3,7 +3,7 @@ name: "woolwork-ui"
 description: "Apply the Woolwork design language to any web UI: a physically believable wool, felt, and yarn world with sewn attachments and place-then-stitch choreography. Use when building a new site or component in a wool, felt, yarn, knit, craft, cozy, or handmade aesthetic, when porting an existing site into that look, or when editing any project that already contains woolwork.css."
 metadata:
   author: "Leeor Nahum"
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Woolwork UI
@@ -22,7 +22,7 @@ Every element must obey all five. When a design question has no obvious answer, 
 
 ## Applying the system
 
-1. Copy `assets/woolwork.css` and `assets/woolwork.js` into the project and load them once (stylesheet in the document head or root layout, script at the end of body or in a client-side entry). Load the two fonts (Baloo 2 and Nunito) from Google Fonts or self-host them per `references/theming.md`; the kit falls back to system rounded faces without them, but the intended look needs them. `assets/starter.html` is a minimal working page to copy from.
+1. Copy `assets/woolwork.css` and `assets/woolwork.js` into the project and load them once (stylesheet in the document head or root layout, script at the end of body or in a client-side entry). Add the one-line `ww-js` head snippet shown in `assets/starter.html` right after the stylesheet link so reveal styling applies before first paint; without it a slow first paint can flash content visible, hide it, then reveal it. Load the two fonts (Baloo 2 and Nunito) from Google Fonts or self-host them per `references/theming.md`; the kit falls back to system rounded faces without them, but the intended look needs them. `assets/starter.html` is a minimal working page to copy from.
 2. Put `class="board"` on `body`.
 3. Map every UI element to its craft counterpart using `references/dictionary.md`. Keep the information architecture unchanged: Woolwork changes material, attachment, and motion, never structure or content.
 4. Add `sew` (plus `stitch` where sewn) to elements that should arrive with the place-then-stitch reveal.

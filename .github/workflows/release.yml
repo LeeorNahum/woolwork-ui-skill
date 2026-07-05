@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify version surfaces match the tag
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          fail=0
+          check() {
+            if ! grep -qF "$2" "$1"; then
+              echo "::error file=$1::expected to find '$2' in $1"
+              fail=1
+            fi
+          }
+          check assets/woolwork.css "--ww-version:\"$TAG\""
+          check assets/woolwork.js "WOOLWORK v$TAG"
+          check SKILL.md "version: \"$TAG\""
+          check references/theming.md "--ww-version: \"$TAG\""
+          exit $fail
+
+      - name: Check kit script syntax
+        run: node --check assets/woolwork.js
+
+      - name: Package woolwork-ui.zip
+        run: |
+          mkdir -p dist/woolwork-ui
+          cp -r SKILL.md AGENTS.md README.md references assets dist/woolwork-ui/
+          cd dist && zip -r woolwork-ui.zip woolwork-ui
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/woolwork-ui.zip \
+            --title "Woolwork UI $GITHUB_REF_NAME" \
+            --notes "Install by unzipping into your skills directory. Changes and migration steps are listed in \`references/migration.md\` under this version."

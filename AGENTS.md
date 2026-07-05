@@ -19,7 +19,7 @@ Maintenance contract for editing the `woolwork-ui` skill itself. Guidance for *a
 - Kit and docs move together. A class added, renamed, or removed in the kit is updated in `dictionary.md`, demoed if user-visible, and logged in `migration.md` within the same edit.
 - Class and token names are append-only within a major version. Never repurpose a name for a different visual; retire it and log the retirement.
 - Project token overrides live in project stylesheets, never inside the kit files. Do not add project-specific values to `assets/`.
-- The kit's `--ww-version` token, the JS header comment, `SKILL.md` frontmatter `metadata.version`, and the README version mention must always agree. Bump them together, immediately, per semver: patch for wording and fixes, minor for new components or guidance, major for renames, removals, or changed behavior.
+- The version surfaces must always agree: the kit's `--ww-version` token, the JS header comment, `SKILL.md` frontmatter `metadata.version`, the token example in `references/theming.md`, and on release the Git tag and GitHub release. The README carries a latest-release badge instead of a hand-written number, so it tracks automatically. Bump all hand-edited surfaces together, immediately, per semver: patch for wording and fixes, minor for new components or guidance, major for renames, removals, or changed behavior.
 - Calibrate bumps against the last released state, not per editing pass. Multiple passes before a release collapse into one honest bump.
 - Preserve distinctive wording that carries the system's intent (the five laws, "place, then stitch", "dye, never paint"). Do not flatten it into generic design-system language.
 
@@ -33,10 +33,27 @@ Maintenance contract for editing the `woolwork-ui` skill itself. Guidance for *a
 - Reveals never affect layout, scroll height, selection, or no-JS rendering.
 - `prefers-reduced-motion` guards stay intact.
 
+## Branches and releases
+
+Branches are roles. `dev` is the working branch where every edit lands first; `main` is the released state and moves only at release time. Never commit work directly to `main`.
+
+A release is a contract between the code, the tag, the packaged artifact, and every project that installs the skill. The downloadable artifact is `woolwork-ui.zip`, built and attached to a GitHub release by `.github/workflows/release.yml` when a `v*` tag is pushed. Consumers install from the latest release page, so a stale or half-made release is user-facing breakage.
+
+Release procedure:
+
+1. Run the finishing checks below on `dev`.
+2. Inspect branch state before promoting: fetch, compare `dev` and `main` tips and ahead/behind counts, and flag anything unusual (a commit landed directly on `main`, unexpected divergence, parallel work). Resolve or surface it before continuing.
+3. Confirm the changelog in `references/migration.md` covers everything since the last tag, and that the version bump honestly reflects that full delta.
+4. Fast-forward merge `dev` into `main`. If fast-forward is impossible, stop and reconcile; do not force-push.
+5. Tag `main` as `vX.Y.Z` matching the version surfaces, then push `main`, `dev`, and the tag.
+6. Verify the workflow published the release, the zip attached, and the README badge and the latest-release link resolve to the new version.
+7. Update any project that pairs with this skill per that project's own contract (a site that demos the kit re-pins its submodule and re-copies the kit files).
+
 ## Finishing checks before any release
 
 1. `node --check assets/woolwork.js` passes.
 2. Grep the whole skill tree for em dashes; there must be none.
 3. Every file named in `SKILL.md` exists and has a direct loading condition.
 4. `assets/starter.html` opens correctly against the current kit.
-5. All four version mentions agree.
+5. All version surfaces agree, including the theming reference's token example.
+6. Every kit change since the last release is logged in `references/migration.md` and reflected in `references/dictionary.md` where user-visible.

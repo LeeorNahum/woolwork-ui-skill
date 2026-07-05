@@ -16,6 +16,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | Image, media | A photo mounted on a stitched felt frame | `figure.photo` with `img` and optional `figcaption` |
 | Skeleton / loading placeholder | Basting: pale fabric held by loose temporary stitches | `.basting` (gently pulses; static under reduced motion) |
 | Empty state | A bare patch with a single tag explaining what will live there | Compose: `.felt` + `.tag` + muted `--ink-soft` text |
+| Decorative accent | A pompom of tied-off yarn | `.pompom` (dye with `--c`, resize with width/height; decoration only, never a control) |
 
 ## Buttons and actions
 
@@ -78,6 +79,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | UI element | Craft object | How |
 |---|---|---|
 | Headings | Display face with a lifted-thread shadow | Default `h1`-`h6` styling from the kit typography |
+| Display heading emphasis | Embroidered lettering, thread raised off the felt | `.embroider` on the heading |
 | Body text | Ink on felt | Default; always from `--ink`/`--ink-soft` |
 | Blockquote | Fabric with a yarn selvedge along its left edge | `blockquote.selvedge` |
 | Inline code | A woven pattern label | `code.pattern` |

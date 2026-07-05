@@ -1,6 +1,8 @@
 # Woolwork UI
 
-A design language that turns any web UI into a believable wool, felt, and yarn craft world, in the lineage of the great craft-material platformers. Ships as an agent skill: a compact `SKILL.md`, deep references, and a copy-in CSS/JS kit.
+[![GitHub Release](https://img.shields.io/github/v/release/LeeorNahum/woolwork-ui-skill?sort=semver)](https://github.com/LeeorNahum/woolwork-ui-skill/releases/latest)
+
+A design language that turns any web UI into a believable wool, felt, and yarn craft world, in the lineage of the great craft-material platformers. Ships as an agent skill: a compact `SKILL.md`, deep references, and a copy-in CSS/JS kit. Download the packaged skill from the [latest release](https://github.com/LeeorNahum/woolwork-ui-skill/releases/latest), or install the repo as a submodule.
 
 ## What you get
 

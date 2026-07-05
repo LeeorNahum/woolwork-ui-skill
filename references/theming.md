@@ -8,7 +8,7 @@ Defined on `:root` in `woolwork.css`:
 
 ```css
 :root {
-  --ww-version: "1.0.0";
+  --ww-version: "1.1.0";
 
   /* Board (the work surface behind everything) */
   --board: #e3ddd0;          /* soft pale felt over burlap weave */
