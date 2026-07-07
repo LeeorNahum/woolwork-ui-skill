@@ -45,4 +45,5 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" dist/woolwork-ui.zip \
             --title "Woolwork UI $GITHUB_REF_NAME" \
-            --notes "Install by unzipping into your skills directory. Changes and migration steps are listed in \`references/migration.md\` under this version."
+            --generate-notes \
+            --notes "Install by unzipping into your skills directory. To update an existing project, compare its \`--ww-version\` token to this release and follow the diff-driven procedure in \`references/migration.md\`."

@@ -11,7 +11,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | Alternate surface | A knitted patch (stockinette) | `.knit`, same modifiers as `.felt` |
 | Hero | A large deep felt patch | `.felt.deep.stitch` |
 | Divider | A seam: a running stitch over a pressed crease | `<hr class="seam">` |
-| Sidebar, drawer | A larger felt panel pinned along one edge | Compose: `.felt.deep` fixed to an edge; open/close is a translate transition; pin corners with `.safety-pin` |
+| Sidebar, drawer | A larger felt panel pinned along one edge | Compose: `.felt.deep` fixed to an edge; open/close is a translate transition; fasten corners with `.clip` or `.safety-pin` |
 | Footer | A folded hem: a slightly darker felt band | `.felt` dyed toward the board color, no stitch |
 | Image, media | A photo mounted on a stitched felt frame | `figure.photo` with `img` and optional `figcaption` |
 | Skeleton / loading placeholder | Basting: pale fabric held by loose temporary stitches | `.basting` (gently pulses; static under reduced motion) |
@@ -64,7 +64,8 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 
 | UI element | Craft object | How |
 |---|---|---|
-| Modal | A note pinned over the board with safety pins | `dialog.pinned` (native `showModal()`) |
+| Modal | A note clipped or pinned over the board | `dialog.pinned` (native `showModal()`); pressing the board around the note closes it (kit JS) |
+| Pinned hardware | A steel gem paper clip slipped over the patch edge, or a closed safety pin | `.clip` / `.safety-pin`, placed with `.tl`/`.tr` or positioned by hand; decoration only |
 | Drawer / sheet | A felt panel sliding in from an edge | Compose: `dialog.pinned` positioned to an edge, translate transition |
 | Tooltip | A paper tag tied on with thread | `[data-tip]` attribute |
 | Popover | A small flap panel | `details.flap` or a positioned `.felt.stitch` |
@@ -80,7 +81,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 |---|---|---|
 | Headings | Display face from the kit typography | `h1`-`h3` and `.display` get `--font-display` automatically |
 | Display heading emphasis | Embroidered lettering, thread raised off the felt | `.embroider` on the heading |
-| Body text | Ink on felt | Default; always from `--ink`/`--ink-soft` |
+| Body text | Ink on felt | Default; inherits from the surface, which picks dark or light thread ink from its own dye so labels stay readable on deep felts (override one element with `--label`; see `theming.md`) |
 | Blockquote | Fabric with a yarn selvedge along its left edge | `blockquote.selvedge` |
 | Inline code | A woven pattern label | `code.pattern` |
 | Keyboard key | A small raised button square | `kbd.pattern` |

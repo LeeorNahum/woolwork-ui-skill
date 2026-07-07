@@ -1,44 +1,31 @@
 # Woolwork Migration and Self-Update
 
-Woolwork is versioned so that an agent invoking this skill on an existing project can detect drift and bring the project up to date.
+Woolwork is versioned so that an agent invoking this skill on an existing project can detect drift and bring the project up to date. This file does not carry a changelog: the kit's history lives in the skill repository's commits, tags, and release notes, and the kit files themselves are the complete current state. You are expected to read the actual differences and reason about them, not follow a hand-written step list.
 
-## Version detection procedure (run on every invocation against an existing project)
+## Version detection (run on every invocation against an existing project)
 
-1. Find the project's Woolwork CSS (search for `--ww-version` in the codebase).
-2. Read the value. Compare against this skill's version in `SKILL.md` frontmatter.
-3. If the project is older, walk the changelog below from the project's version forward, applying each migration.
-4. After migrating, update the project's `--ww-version` token and replace `woolwork.css` / `woolwork.js` with this skill's copies from `assets/`, then re-apply any project-local token overrides (dye colors, fonts). Token overrides live in the project's own stylesheet, never inside the kit files, precisely so kit replacement is safe.
-5. If the project has no `--ww-version`, it hand-copied fragments before adoption. Audit it against the full dictionary in `references/dictionary.md` and install the current kit.
+1. Find the project's Woolwork CSS (search the codebase for `--ww-version`).
+2. Read its value and compare it against this skill's version in `SKILL.md` frontmatter.
+3. Equal: the project is current; work normally.
+4. Project older: run the update procedure below before new work.
+5. No `--ww-version` anywhere: the project hand-copied fragments before adoption. Audit it against the full dictionary in `references/dictionary.md` and install the current kit.
 
-## Changelog
+## Update procedure
 
-### 1.1.1 (current)
+The kit files are copies, never forked, and every project keeps its own overrides in its own stylesheets. That contract makes updating mostly mechanical; your judgment goes into the markup and the overrides, guided by what actually changed.
 
-Patch fix; no class renames or removals. Migration is a wholesale replacement of `woolwork.css` from `assets/`.
+1. See what changed. In order of preference:
+   - Diff directly: the project's `woolwork.css` and `woolwork.js` are the old state and this skill's `assets/` are the new state, so `diff` them file against file. This always works, offline, with no history needed.
+   - Git history: if the skill is installed as a git checkout or submodule, `git log --stat v<project-version>..v<skill-version>` and `git diff v<old> v<new> -- assets/` give the same delta with the reasoning in the commit messages.
+   - GitHub: release notes and the compare view at `https://github.com/LeeorNahum/woolwork-ui-skill/compare/v<old>...v<new>` when no local history is available.
+2. Read the delta the way you read any diff: identify new classes and tokens, changed selectors or behaviors, and anything removed or renamed. The forward-compatibility rules below bound what you can encounter: within a major version nothing is renamed or repurposed, so a same-major update can never silently break existing markup.
+3. Replace `woolwork.css` and `woolwork.js` wholesale with this skill's copies from `assets/`. Never hand-merge: project token overrides (dye colors, fonts) live in the project's own stylesheets, precisely so kit replacement is safe.
+4. Apply what the delta implies to the project itself. New components or head snippets are opportunities to adopt; changed behaviors may make project-side workarounds unnecessary (delete them); a major-version removal or rename means updating the markup that used the old name.
+5. Verify: the project's `--ww-version` now matches the skill (it travels inside the replaced `woolwork.css`), the pages render correctly with and without JavaScript, and night mode still reads.
 
-- Tab rows use slightly tighter side padding so three folder tabs do not create a one-pixel horizontal overflow on narrow mobile viewports.
+## Decisions that do not move
 
-### 1.1.0
-
-Fixes and additions; no class renames or removals. Migration is a wholesale replacement of `woolwork.css` and `woolwork.js` from `assets/`, plus the markup and head checks below.
-
-- Revealed `.sew` elements now settle to `translate: none; rotate: none` instead of zero values. A zero transform kept a permanent stacking context on every revealed card, which painted open dropdown flaps and tooltips underneath later sibling cards. No project action needed beyond replacing the kit files.
-- `dialog.pinned` now carries the felt material itself and animates directly on `[open]`. Previously the kit styled an inner `.patch` element that was never documented or defined, so pinned modals rendered with a transparent background and no drop-in animation. Check each `dialog.pinned` in the project: content may sit directly inside the dialog; if an inner wrapper div exists only to be the patch, remove it. Dye with `--c` on the dialog as with any felt.
-- `.buttonhole` and `.strands` are now handled by delegated listeners like every other behavior, so instances added after load work. Remove any project-side re-initialization that existed to work around this.
-- `.sew` elements added to the DOM after load now arm their reveal automatically (a MutationObserver watches for them), matching the kit's promise that late-mounted elements are live. An element that is re-parented after revealing replays its arrival.
-- Tab groups sync panel visibility to the selected tab when the script initializes, so markup can ship every `.tab-panel` visible and no-JS readers still get all the content. Markup that pre-hides panels with `hidden` keeps working; prefer removing those attributes so the panels read without JavaScript.
-- New `.pompom` decorative component and `.embroider` display-heading treatment; see `references/dictionary.md`.
-- Tooltip bubbles and their threads now carry an explicit z-index so they cannot slip under adjacent patches.
-- `select.pocket` sizes its thread-pull chevron explicitly, keeps the fiber grain layer, and draws the chevron with a light underlayer so it stays legible on night pockets. Previously the chevron inherited the pocket's 140px grain tile size and rendered as a giant glyph.
-- The spool fill now dyes from `--c` like every other component (`--fc` still wins when set, as a deprecated alias). Previously `--c` on a spool silently did nothing.
-- Felt, knit, and patch buttons transition `background-color` and `color` over 0.4s so the dominant surfaces cross-fade with the board during the night flip instead of snapping.
-- New recommended head snippet (`assets/starter.html`): a one-line inline script that adds `ww-js` before first paint, eliminating the visible flash of content that could appear before reveals armed on slow paints. Add it right after the stylesheet link in projects using `.sew`, and pair it with the starter's `onerror` disarm on the kit script tag so a failed script load cannot leave content hidden.
-
-### 1.0.0
-
-Initial release.
-
-Decisions locked at 1.0.0 that future versions must not silently reverse:
+These were settled deliberately and are not to be reversed by any future version; if a diff appears to reverse one, treat it as a defect in the newer state and raise it rather than applying it:
 
 - Press feedback is a translate settle plus a deepened shadow. No scaling, and no continuous pointer-tracked deformation of any kind; that was tried, cut, and must not return under a new name.
 - Reveals are visual only and never affect layout or scroll height.
@@ -47,5 +34,5 @@ Decisions locked at 1.0.0 that future versions must not silently reverse:
 ## Forward-compatibility rules for future versions
 
 - Never repurpose a class name for a different visual; retire names instead.
-- Token names are append-only within a major version.
-- Any removal or rename is a major version bump and must include a migration table here.
+- Class and token names are append-only within a major version.
+- Any removal or rename is a major version bump, called out plainly in the release notes and the commit that makes it.

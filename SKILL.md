@@ -3,7 +3,7 @@ name: "woolwork-ui"
 description: "Apply the Woolwork design language to any web UI: a physically believable wool, felt, and yarn world with sewn attachments and place-then-stitch choreography. Use when building a new site or component in a wool, felt, yarn, knit, craft, cozy, or handmade aesthetic, when porting an existing site into that look, or when editing any project that already contains woolwork.css."
 metadata:
   author: "Leeor Nahum"
-  version: "1.1.1"
+  version: "1.2.0"
 ---
 
 # Woolwork UI
@@ -44,7 +44,7 @@ Every element must obey all five. When a design question has no obvious answer, 
 - Read `references/motion.md` when touching interaction, animation, or reveals, or before adding any new motion.
 - Read `references/theming.md` when dyeing to a brand palette, adding dark mode, or choosing type.
 - Read `references/frameworks.md` when integrating with a framework, bundler, Tailwind, or a rendering mode decision (SSR, SSG, SPA).
-- Read `references/migration.md` first whenever the target project already contains `woolwork.css`; compare its `--ww-version` token to this skill's assets and apply the listed migrations before new work.
+- Read `references/migration.md` first whenever the target project already contains `woolwork.css`; compare its `--ww-version` token to this skill's version and, if the project is behind, follow that file's diff-driven update procedure (diff the project's kit files against `assets/`, or the two version tags in the skill repo) before new work.
 
 ## Porting an existing site
 

@@ -33,7 +33,7 @@ Then map your components using `references/dictionary.md` and dye to your palett
 
 ## Versioning
 
-The kit stamps `--ww-version` into CSS. Agents invoking the skill on an existing project compare that token against the skill version and apply migrations from `references/migration.md`.
+The kit stamps `--ww-version` into CSS. Agents invoking the skill on an existing project compare that token against the skill version and, when the project is behind, read the actual delta (diff the project's kit files against `assets/`, or the two version tags on this repo) and update from it, per `references/migration.md`.
 
 ## License
 

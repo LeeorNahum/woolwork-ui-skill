@@ -16,7 +16,7 @@ The checkbox (`.sew-check`) is a four-hole button that gets cross-stitched when 
 
 ## Place, then stitch (reveal choreography)
 
-Elements with `.sew` settle onto the board when scrolled into view (opacity, a small translate, a third of a degree of rotation). If the element also has `.stitch`, one thread then draws around its edge and resolves into the running stitch; the kit measures the element and injects a temporary SVG sized to its exact box, so the thread always traces that element's own edge, never a parent's or a neighbor's.
+Elements with `.sew` settle onto the board when scrolled into view (opacity, a small translate, a third of a degree of rotation). If the element also has `.stitch`, the running stitch then sews on around the edge: the same dashed outline the element keeps afterward, appearing segment by segment from the top-left corner over roughly 1.25 seconds, starting just after the settle. The kit measures the element, rebuilds the dashed border's exact geometry (inset, all four hand-cut corner radii, stroke centerline) as a temporary SVG, and reveals it behind an animated mask, so the drawn thread coincides with the final stitch and the handoff is invisible.
 
 Rules:
 

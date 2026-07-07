@@ -8,7 +8,7 @@ Defined on `:root` in `woolwork.css`:
 
 ```css
 :root {
-  --ww-version: "1.1.1";
+  --ww-version: "1.2.0";
 
   /* Board (the work surface behind everything) */
   --board: #e3ddd0;
@@ -65,6 +65,12 @@ Most components read a local `--c` (surface color) and `--t` (thread/text color)
 
 This is the entire theming API for one-off variation. No modifier class explosion.
 
+## Label ink follows the dye
+
+Text on a dyed surface is thread, and thread is chosen against the fabric: the kit derives each surface's label ink from its own `--c` (in browsers with relative color syntax; others keep the inherited `--ink`). Pale dyes such as cream and butter carry near-ink dark lettering; deep dyes such as rose, leaf, sky, and plum carry near-cream light lettering, and both are re-tinted with the felt's own hue so they still read as dyed fiber. Components whose visible background is a mix (unselected folder tabs, breadcrumbs, the quilt header band) judge against that mix via `--wool-surface`, not the raw dye. Knit and label-bearing patches also get a one-pixel lift shadow in the opposite tone, so lettering separates from the fiber texture.
+
+Because the choice is derived, re-dyeing and night mode need no per-element fixes: darken a felt past the threshold and its labels flip to light thread by themselves. To overrule the choice on one element, set `--label` to a token (`--label: var(--ink)`); never a raw hex.
+
 ## Night theme
 
 Night is a token override, not a rewrite. Wool at night reads as deeper dye plus a dimmer lamp:
@@ -81,7 +87,7 @@ Night is a token override, not a rewrite. Wool at night reads as deeper dye plus
 }
 ```
 
-The rules of the flip: every felt deepens (same hue, lower lightness and chroma), every thread lightens so stitches keep contrast against the darker felt they sit on, and the highlight/occlusion pair dims because the lamp is lower. Materials read their text color from `--ink`, so anything composed from tokens survives the flip automatically; if text is unreadable in night mode, it was hard-coded, and the fix is to move it onto a token, never to patch the night value.
+The rules of the flip: every felt deepens (same hue, lower lightness and chroma), every thread lightens so stitches keep contrast against the darker felt they sit on, and the highlight/occlusion pair dims because the lamp is lower. Label ink is derived from each surface's dye (see above), so dyed components re-choose their lettering automatically when the felts deepen; plain text on the board reads `--ink`. If text is unreadable in night mode, it was hard-coded, and the fix is to move it onto a token, never to patch the night value.
 
 Toggle with `woolwork.night()` (adds/removes the attribute on `<html>` and persists nothing by default; wire your own storage if wanted). Shadows stay the same recipe; darker felt under the same lamp is what makes it feel like the same room with the lights low.
 
