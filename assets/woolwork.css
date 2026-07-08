@@ -262,24 +262,24 @@ a.thread-link:visited{background-image:url("data:image/svg+xml;utf8,<svg xmlns='
   background:rgba(60,45,25,.5);box-shadow:inset 0 1px 1px rgba(0,0,0,.4)}
 .zip[open]>summary .pull{rotate:18deg}
 .zip .lining{padding:6px 18px 18px;line-height:1.55}
-/* ---------- DROPDOWN: a slip of ruled paper slotted out from behind ----------
-   The panel is a piece of lined paper. The trigger sits above it (z-index) and
-   the paper slides down out of the slot underneath it, so it reads as being
-   pulled from a pocket, not a flap unfolding on top. The inset top shadow is
-   the slot mouth the paper just cleared. */
+/* ---------- DROPDOWN: a slip of paper slotted out from behind ----------
+   The panel is a clean slip of paper (crisp small radii, a lit top edge). The
+   trigger sits above it (z-index) and the paper slides down out of the slot
+   underneath it, so it reads as being pulled from a pocket, not a flap
+   unfolding on top. The inset top shadow is the slot mouth it just cleared. */
 .flap{position:relative;display:inline-block}
 .flap[open]{z-index:60}
 .flap>summary{list-style:none;cursor:pointer;position:relative;z-index:2}
 .flap>summary::-webkit-details-marker{display:none}
-.flap .panel{position:absolute;left:0;top:calc(100% - 6px);min-width:210px;z-index:1;padding:14px 10px 12px;
-  display:grid;gap:4px;rotate:-.5deg;color:var(--ink);
+.flap .panel{position:absolute;left:2px;top:calc(100% - 8px);min-width:212px;z-index:1;padding:13px 11px 13px;
+  display:grid;gap:2px;rotate:-.6deg;color:var(--ink);
   background-color:var(--paper);
-  background-image:repeating-linear-gradient(to bottom,transparent 0 21px,rgba(122,92,73,.10) 21px 22px);
-  border-radius:3px 4px 7px 8px;
-  box-shadow:inset 0 3px 5px -3px rgba(30,18,10,.42),inset 0 0 0 1px rgba(122,92,73,.14),
-    0 4px 5px -2px rgba(30,20,12,.32),0 14px 20px -12px rgba(30,20,12,.4)}
+  background-image:linear-gradient(180deg,color-mix(in srgb,var(--paper) 88%,white),var(--paper) 22%,color-mix(in srgb,var(--paper) 94%,var(--cocoa)));
+  border-radius:2px 3px 6px 7px;
+  box-shadow:inset 0 5px 6px -5px rgba(30,18,10,.55),inset 0 1px 0 rgba(255,255,255,.7),
+    inset 0 0 0 1px rgba(122,92,73,.13),0 2px 3px -1px rgba(30,20,12,.3),0 16px 22px -12px rgba(30,20,12,.44)}
 .flap[open] .panel{animation:slotpaper .42s var(--spring)}
-@keyframes slotpaper{from{transform:translateY(-34px);opacity:0}to{transform:none;opacity:1}}
+@keyframes slotpaper{from{transform:translateY(-40px);opacity:0}to{transform:none;opacity:1}}
 .flap .panel button{display:block;width:100%;text-align:left;border:0;cursor:pointer;color:var(--ink);
   font:600 .95rem var(--font-body);padding:8px 12px;border-radius:6px;background:transparent}
 .flap .panel button:hover{background:color-mix(in srgb,var(--butter) 40%,transparent)}
@@ -301,12 +301,16 @@ dialog.pinned[open]{animation:pindrop .55s var(--spring)}
    a lit pass, honoring the top-left light). .clip is the classic double-loop
    gem paper clip, slipped over the patch edge; .safety-pin is coil, bar, and
    clasp. Position with .tl/.tr or place by hand. */
-.clip{position:absolute;width:26px;height:56px;pointer-events:none;z-index:3;
-  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 112'><defs><linearGradient id='mg' x1='0.1' y1='0' x2='0.9' y2='1'><stop offset='0' stop-color='%23fbfcfd'/><stop offset='0.28' stop-color='%23dfe3e8'/><stop offset='0.6' stop-color='%23b3b9c1'/><stop offset='1' stop-color='%238f959e'/></linearGradient></defs><g fill='none' stroke-linecap='round'><path d='M8 20 A12 12 0 0 1 32 20 V92 A12 12 0 0 1 8 92 Z' stroke='url(%23mg)' stroke-width='3.7'/><path d='M27 44 V74 A7 7 0 0 1 13 74 V28' stroke='url(%23mg)' stroke-width='3.3'/><path d='M8 20 A12 12 0 0 1 20 8' stroke='rgba(255,255,255,0.85)' stroke-width='1.3'/></g></svg>") center/contain no-repeat;
-  filter:drop-shadow(1px 2px 2px rgba(30,20,12,.32))}
-.clip.tl{left:16px;top:-18px;rotate:-8deg}
-.clip.tr{right:16px;top:-18px;rotate:7deg}
-.clip.tc{left:calc(50% - 13px);top:-19px;rotate:2deg}
+.clip{position:absolute;width:23px;height:60px;pointer-events:none;z-index:3;
+  /* One bent steel wire drawn as the classic gem clip: an outer loop and a
+     shorter inner loop with the tell-tale straight tail. Each wire is layered
+     dark base -> silver body -> an offset white specular, so the round bar
+     reads as a lit tube under the top-left light. */
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 116'><g fill='none' stroke-linecap='round'><path d='M9 17 A13 13 0 0 1 35 17 V99 A13 13 0 0 1 9 99 Z' stroke='%238b9199' stroke-width='4.6'/><path d='M29.5 40 V88 A7.5 7.5 0 0 1 14.5 88 V30' stroke='%238b9199' stroke-width='4.6'/><path d='M9 17 A13 13 0 0 1 35 17 V99 A13 13 0 0 1 9 99 Z' stroke='%23ccd1d6' stroke-width='3.4'/><path d='M29.5 40 V88 A7.5 7.5 0 0 1 14.5 88 V30' stroke='%23ccd1d6' stroke-width='3.4'/><g transform='translate(-0.6,-0.9)' stroke='%23ffffff' stroke-width='1.15' opacity='0.9'><path d='M9 17 A13 13 0 0 1 35 17 V99 A13 13 0 0 1 9 99 Z'/><path d='M29.5 40 V88 A7.5 7.5 0 0 1 14.5 88 V30'/></g></g></svg>") center/contain no-repeat;
+  filter:drop-shadow(1px 2px 2px rgba(30,20,12,.34))}
+.clip.tl{left:18px;top:-22px;rotate:-8deg}
+.clip.tr{right:18px;top:-22px;rotate:7deg}
+.clip.tc{left:calc(50% - 11.5px);top:-23px;rotate:2deg}
 .safety-pin{position:absolute;width:64px;height:27px;pointer-events:none;
   background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 40'><defs><linearGradient id='m' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23f2efe6'/><stop offset='0.55' stop-color='%23cfc8b6'/><stop offset='1' stop-color='%23a89f8a'/></linearGradient></defs><g fill='none' stroke-linecap='round'><path d='M86.6 17.4 L22.6 13.4 A9.5 9.5 0 1 0 21.6 32.4 L79.6 30.4' stroke='rgba(60,45,25,0.35)' stroke-width='4.6'/><path d='M86 16 L22 12 A9.5 9.5 0 1 0 21 31 L79 29' stroke='url(%23m)' stroke-width='4'/><rect x='77' y='9.5' width='14' height='15' rx='5.5' fill='url(%23m)' stroke='rgba(60,45,25,0.3)' stroke-width='1.4'/></g></svg>") center/contain no-repeat;
   filter:drop-shadow(0 2px 2px rgba(30,20,12,.3))}

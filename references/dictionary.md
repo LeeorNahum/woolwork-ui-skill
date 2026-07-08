@@ -57,7 +57,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | Tabs | Felt folder tabs; the selected one sits flush and merges into the panel while the rest are recessed behind it (nothing floats above the board) | `.tabs > button[aria-controls]` with `.tab-panel` targets (kit JS wires selection) |
 | Breadcrumbs | Small tags strung on one thread | `ul.crumbs` with `a`/`span`, current item carries `aria-current` |
 | Pagination | A row of small patches; the current page is pressed in | `ul.pages`, current carries `aria-current` |
-| Dropdown menu | A slip of ruled paper slotted out from behind the trigger | `details.flap` with `.panel` (the panel is paper; do not add `.felt`) |
+| Dropdown menu | A slip of paper slotted out from behind the trigger | `details.flap` with `.panel` (the panel is paper; do not add `.felt`) |
 | Hamburger | Three strands of yarn that pull into a cross | `button.strands` with three `.yarn` children |
 | Stepper / wizard | Beads strung on a yarn line, filled up to the current step | Compose: `.yarn` track with `.sewn-button` sized dots; completed ones dyed, current pressed in |
 | Skip link | A thread-link that appears on focus | `a.thread-link` positioned off-screen until `:focus` |

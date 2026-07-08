@@ -40,7 +40,7 @@ Rules:
 - Only transform and opacity animate per frame. Never transition `filter`, `border`, `box-shadow` in a loop (single-shot hover shadow transitions are fine).
 - `details.flap` panels must stay absolutely positioned; converting them to in-flow will reflow the page on open.
 - Keep toasts and modals outside component containers; the kit appends toasts to one fixed `.toast-tray` on body (so they stack in a column, each dismissable by its yarn-cross or a sideways swipe) and uses the native dialog top layer for modals.
-- The dropdown flap panel is ruled paper that slides down out of a slot behind its trigger; the trigger must stay above it (the kit gives `.flap>summary` a higher `z-index`) so the paper reads as emerging from underneath. Do not add `.felt` to the panel.
+- The dropdown flap panel is a slip of paper that slides down out of a slot behind its trigger; the trigger must stay above it (the kit gives `.flap>summary` a higher `z-index`) so the paper reads as emerging from underneath. Do not add `.felt` to the panel.
 - Stitched elements are positioned by the kit so their stitch always traces their own box. Overlays (dropdown panels, open flaps) carry explicit z-index above sibling cards; never wrap an overlay's ancestor in a new stacking context (isolation, transform, filter) or the overlay will paint beneath later siblings.
 - Respect the kit's `prefers-reduced-motion` block; add any new animation inside the same guard discipline.
 - One Tier 3 simulation (canvas or WebGPU cloth hero) per viewport at most, feature-detected, paused off-screen. See `frameworks.md` for the WebGPU posture.
