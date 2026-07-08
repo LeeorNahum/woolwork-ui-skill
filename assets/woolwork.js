@@ -1,4 +1,4 @@
-/* WOOLWORK v1.2.0 progressive enhancement.
+/* WOOLWORK v1.3.0 progressive enhancement.
    Everything renders without this file; it only adds motion and physics. */
 (function(){
   'use strict';
@@ -6,15 +6,20 @@
   var rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---- Place, then stitch: reveal choreography ----
-     The patch settles into place, then its running stitch sews on around the
-     edge: the same dashed outline the element keeps afterward, appearing
-     segment by segment from the top-left corner. The drawn path rebuilds the
-     dashed border's exact geometry (8px inset, the element's own four corner
-     radii, stroke centerline half a stroke further in), so the thread and the
-     final stitch coincide. Visual only. */
+     The running stitch on a .stitch element is a real drawn thread that traces
+     the element's exact box: equal inset on every side, following its own four
+     corner radii. It is the resting border too, so what draws on is exactly
+     what remains (the CSS dashed border is only the no-JS fallback). On reveal
+     the thread sews on in place from the top-left corner; a ResizeObserver
+     keeps the path fitted to the box. Visual only. */
   var NS = 'http://www.w3.org/2000/svg', stitchSeq = 0;
-  function stitchOn(el){
-    if(rm || !el.classList.contains('stitch')) { el.classList.remove('unstitched'); return; }
+  var ro = 'ResizeObserver' in window ? new ResizeObserver(function(entries){
+    entries.forEach(function(en){ resizeThread(en.target); });
+  }) : null;
+
+  /* The dashed-border path for the element's current size: inset 8px, stroke
+     centerline half a stroke further in, each corner its own measured radius. */
+  function stitchGeom(el){
     var r = el.getBoundingClientRect();
     var inset = 8, sw = 2.5, edge = sw / 2;
     var w = Math.max(0, r.width - inset * 2), h = Math.max(0, r.height - inset * 2);
@@ -37,47 +42,83 @@
       'A' + bl.x + ' ' + bl.y + ' 0 0 1 ' + edge + ' ' + (h - edge - bl.y) +
       'V' + (edge + tl.y) +
       'A' + tl.x + ' ' + tl.y + ' 0 0 1 ' + (edge + tl.x) + ' ' + edge + 'Z';
+    return {d:d, w:w, h:h};
+  }
+
+  /* Attach a persistent thread SVG to a .stitch element (idempotent). */
+  function ensureThread(el){
+    if(el._wwThread) return el._wwThread;
+    var g = stitchGeom(el);
     var svg = document.createElementNS(NS,'svg');
     svg.setAttribute('class','stitch-thread');
-    svg.setAttribute('width', w); svg.setAttribute('height', h);
-    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
-    /* The dashed outline is revealed by a solid lead thread animated inside a
-       mask, so the dashes appear in their final places instead of sliding. */
+    svg.setAttribute('width', g.w); svg.setAttribute('height', g.h);
+    svg.setAttribute('viewBox', '0 0 ' + g.w + ' ' + g.h);
+    var path = document.createElementNS(NS,'path');
+    path.setAttribute('d', g.d);
+    path.style.strokeDasharray = '6.5 4.6';
+    svg.appendChild(path); el.appendChild(svg);
+    el.classList.add('threaded');
+    el._wwThread = {svg:svg, path:path, defs:null, lead:null, drawn:true};
+    if(ro) ro.observe(el);
+    return el._wwThread;
+  }
+
+  function resizeThread(el){
+    var rec = el._wwThread; if(!rec) return;
+    var g = stitchGeom(el);
+    rec.svg.setAttribute('width', g.w); rec.svg.setAttribute('height', g.h);
+    rec.svg.setAttribute('viewBox', '0 0 ' + g.w + ' ' + g.h);
+    rec.path.setAttribute('d', g.d);
+    if(rec.lead) rec.lead.setAttribute('d', g.d);
+  }
+
+  /* Undrawn state for a .sew element awaiting reveal: hide the dashed path
+     behind a mask whose solid lead thread has not been drawn yet. */
+  function armThread(el){
+    var rec = ensureThread(el);
+    if(rm){ rec.drawn = true; return; }
+    if(rec.defs){ rec.defs.remove(); rec.defs = null; }
+    var g = stitchGeom(el);
     var id = 'ww-stitch-' + (++stitchSeq);
     var defs = document.createElementNS(NS,'defs');
     var mask = document.createElementNS(NS,'mask');
     mask.setAttribute('id', id);
     mask.setAttribute('maskUnits','userSpaceOnUse');
-    mask.setAttribute('x','-2'); mask.setAttribute('y','-2');
-    mask.setAttribute('width', w + 4); mask.setAttribute('height', h + 4);
+    mask.setAttribute('x','-3'); mask.setAttribute('y','-3');
+    mask.setAttribute('width', g.w + 6); mask.setAttribute('height', g.h + 6);
     var lead = document.createElementNS(NS,'path');
-    lead.setAttribute('d', d);
+    lead.setAttribute('d', g.d);
     lead.setAttribute('fill','none');
     lead.setAttribute('stroke','#fff');
-    lead.setAttribute('stroke-width', sw + 3);
+    lead.setAttribute('stroke-width','5.5');
     lead.setAttribute('pathLength','100');
     lead.style.strokeDasharray = '100';
     lead.style.strokeDashoffset = '100';
-    lead.style.transition = 'stroke-dashoffset 1.05s ease-in-out .2s';
-    mask.appendChild(lead); defs.appendChild(mask); svg.appendChild(defs);
-    var path = document.createElementNS(NS,'path');
-    path.setAttribute('d', d);
-    path.setAttribute('mask','url(#' + id + ')');
-    /* Dash rhythm close to the CSS dashed border, so the handoff is quiet. */
-    path.style.strokeDasharray = '6.5 4.6';
-    svg.appendChild(path); el.appendChild(svg);
+    mask.appendChild(lead); defs.appendChild(mask);
+    rec.svg.insertBefore(defs, rec.svg.firstChild);
+    rec.path.setAttribute('mask','url(#' + id + ')');
+    rec.defs = defs; rec.lead = lead; rec.drawn = false;
+  }
+
+  /* Sew the thread on in place, then drop the mask so it rests as a plain
+     dashed thread (the solid lead reveals the dashes where they will stay). */
+  function drawThread(el){
+    var rec = el._wwThread; if(!rec || rec.drawn) return;
+    var lead = rec.lead;
+    lead.style.transition = 'stroke-dashoffset 1.05s ease-in-out .12s';
     requestAnimationFrame(function(){ requestAnimationFrame(function(){
       lead.style.strokeDashoffset = '0';
     });});
+    rec.drawn = true;
     setTimeout(function(){
-      el.classList.remove('unstitched');   /* dashed stitch fades in */
-      svg.style.transition = 'opacity .3s'; svg.style.opacity = '0';
-      setTimeout(function(){ svg.remove(); }, 350);
-    }, 1350);
+      if(rec.defs){ rec.defs.remove(); rec.defs = null; }
+      rec.path.removeAttribute('mask'); rec.lead = null;
+    }, 1300);
   }
+
   var io;
   function armReveal(el){
-    if(el.classList.contains('stitch')) el.classList.add('unstitched');
+    if(el.classList.contains('stitch')) armThread(el);
     el.classList.remove('on');
     io.observe(el);
   }
@@ -87,25 +128,26 @@
       var el = en.target;
       io.unobserve(el);
       /* Force the browser to paint the hidden state before flipping to
-         visible. Elements already on screen at observe() time otherwise
-         get 'on' added in the same frame as their first paint, and the
-         transition never has a start frame to animate from. */
+         visible, so the settle transition has a start frame to animate from. */
       requestAnimationFrame(function(){ requestAnimationFrame(function(){
         el.classList.add('on');
-        stitchOn(el);
+        if(el.classList.contains('stitch')) drawThread(el);
       }); });
     });
   }, {threshold:.12});
+  /* Thread every stitched element up front: .sew ones arm undrawn and draw on
+     reveal; stitched-but-not-sewn ones (toasts, static cards) draw at once. */
+  document.querySelectorAll('.stitch:not(.sew)').forEach(ensureThread);
   document.querySelectorAll('.sew').forEach(armReveal);
-  /* Back-forward cache restores the page without re-running this script,
-     so a page reached via browser back/forward can arrive with reveals
-     already resolved from before navigation. Re-arm them on that path. */
+  /* Back-forward cache restores the page without re-running this script, so a
+     page reached via back/forward can arrive with reveals already resolved.
+     Re-arm them on that path. */
   window.addEventListener('pageshow', function(e){
     if(!e.persisted) return;
     document.querySelectorAll('.sew').forEach(armReveal);
   });
-  /* Sewn elements mounted after load (by a framework, htmx, or plain DOM
-     work) arm the same way, keeping the whole kit live for late content. */
+  /* Elements mounted after load (a framework, htmx, or plain DOM work) get the
+     same treatment, keeping the whole kit live for late content. */
   if('MutationObserver' in window){
     new MutationObserver(function(muts){
       muts.forEach(function(m){
@@ -113,7 +155,11 @@
           var n = m.addedNodes[i];
           if(n.nodeType !== 1) continue;
           if(n.classList.contains('sew')) armReveal(n);
-          if(n.querySelectorAll) n.querySelectorAll('.sew').forEach(armReveal);
+          else if(n.classList.contains('stitch')) ensureThread(n);
+          if(n.querySelectorAll){
+            n.querySelectorAll('.sew').forEach(armReveal);
+            n.querySelectorAll('.stitch:not(.sew)').forEach(ensureThread);
+          }
         }
       });
     }).observe(document.documentElement, {childList:true, subtree:true});
@@ -184,19 +230,67 @@
     if(e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) d.close();
   });
 
-  /* ---- Toast: a note slides in and gets tacked to the board ---- */
+  /* ---- Toast: notes tacked to a corner tray, dismissable by X or swipe ----
+     All toasts share one fixed .toast-tray so they stack in a column instead
+     of piling on the same spot. Each carries a yarn-cross close and can be
+     flung sideways to dismiss. */
   window.woolwork = window.woolwork || {};
+  function toastTray(){
+    var tray = document.querySelector('.toast-tray');
+    if(!tray){ tray = document.createElement('div'); tray.className = 'toast-tray'; document.body.appendChild(tray); }
+    return tray;
+  }
   window.woolwork.toast = function(msg, ms){
     var t = document.createElement('div');
     t.className = 'toast felt stitch';
     t.style.setProperty('--c','var(--butter)');
     t.style.setProperty('--t','var(--thread-butter)');
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(function(){
+    var label = document.createElement('span');
+    label.textContent = msg; t.appendChild(label);
+    var x = document.createElement('button');
+    x.type = 'button'; x.className = 'yarn-x'; x.setAttribute('aria-label','dismiss');
+    x.innerHTML = '<span class="yarn"></span><span class="yarn"></span>';
+    x.querySelectorAll('.yarn').forEach(function(y){ y.style.setProperty('--c','var(--thread-butter)'); });
+    t.appendChild(x);
+    toastTray().appendChild(t);
+    ensureThread(t);
+    var timer = setTimeout(dismiss, ms || 3200);
+    var gone = false;
+    function dismiss(){
+      if(gone) return; gone = true; clearTimeout(timer);
       t.classList.add('leaving');
-      setTimeout(function(){ t.remove(); }, 320);
-    }, ms || 2600);
+      setTimeout(function(){ t.remove(); }, 380);
+    }
+    x.addEventListener('click', dismiss);
+    /* Swipe to dismiss: drag past a threshold flings the note off the board. */
+    var startX = 0, dx = 0, dragging = false;
+    t.addEventListener('pointerdown', function(e){
+      if(e.target.closest('.yarn-x')) return;
+      dragging = true; startX = e.clientX; dx = 0;
+      t.classList.add('swiping');
+      try{ t.setPointerCapture(e.pointerId); }catch(err){}
+    });
+    t.addEventListener('pointermove', function(e){
+      if(!dragging) return;
+      dx = e.clientX - startX;
+      t.style.translate = dx + 'px 0';
+      t.style.opacity = String(Math.max(0, 1 - Math.abs(dx) / 240));
+    });
+    function endDrag(){
+      if(!dragging) return; dragging = false; t.classList.remove('swiping');
+      if(Math.abs(dx) > 110){
+        clearTimeout(timer); gone = true;
+        t.style.transition = 'translate .25s ease,opacity .25s ease';
+        t.style.translate = (dx > 0 ? 420 : -420) + 'px 0'; t.style.opacity = '0';
+        setTimeout(function(){ t.remove(); }, 260);
+      }else{
+        t.style.transition = 'translate .3s var(--spring),opacity .3s';
+        t.style.translate = '0 0'; t.style.opacity = '1';
+        setTimeout(function(){ t.style.transition = ''; }, 320);
+      }
+    }
+    t.addEventListener('pointerup', endDrag);
+    t.addEventListener('pointercancel', endDrag);
   };
 
   /* ---- Night dye: theme toggle helper ---- */

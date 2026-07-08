@@ -16,7 +16,9 @@ The checkbox (`.sew-check`) is a four-hole button that gets cross-stitched when 
 
 ## Place, then stitch (reveal choreography)
 
-Elements with `.sew` settle onto the board when scrolled into view (opacity, a small translate, a third of a degree of rotation). If the element also has `.stitch`, the running stitch then sews on around the edge: the same dashed outline the element keeps afterward, appearing segment by segment from the top-left corner over roughly 1.25 seconds, starting just after the settle. The kit measures the element, rebuilds the dashed border's exact geometry (inset, all four hand-cut corner radii, stroke centerline) as a temporary SVG, and reveals it behind an animated mask, so the drawn thread coincides with the final stitch and the handoff is invisible.
+Elements with `.sew` settle onto the board when scrolled into view (opacity, a small translate, a third of a degree of rotation). If the element also has `.stitch`, the running stitch then sews on around the edge, appearing segment by segment from the top-left corner over roughly 1.25 seconds, starting just after the settle.
+
+When JavaScript runs, the stitch on a `.stitch` element is a real drawn SVG thread, not the CSS dashed border: the kit measures the element, rebuilds the dashed outline's exact geometry (8px inset equal on every side, each of the four hand-cut corner radii, stroke centerline), and injects it as a persistent thread that a ResizeObserver keeps fitted to the box. The reveal draws that same thread on by growing a solid lead inside a mask, so the dashes appear in their final places instead of sliding, and what draws on is exactly what stays. The CSS dashed border remains as the no-JS fallback and hides itself (`.threaded`) once the drawn thread exists. A seam (`.seam.sew`) is the exception: it has no box to trace, so its crease and running stitch wipe on from left to right instead, the stitch trailing a beat behind the crease.
 
 Rules:
 
@@ -37,7 +39,8 @@ Rules:
 
 - Only transform and opacity animate per frame. Never transition `filter`, `border`, `box-shadow` in a loop (single-shot hover shadow transitions are fine).
 - `details.flap` panels must stay absolutely positioned; converting them to in-flow will reflow the page on open.
-- Keep toasts and modals outside component containers; the kit appends toasts to body and uses the native dialog top layer for modals.
+- Keep toasts and modals outside component containers; the kit appends toasts to one fixed `.toast-tray` on body (so they stack in a column, each dismissable by its yarn-cross or a sideways swipe) and uses the native dialog top layer for modals.
+- The dropdown flap panel is ruled paper that slides down out of a slot behind its trigger; the trigger must stay above it (the kit gives `.flap>summary` a higher `z-index`) so the paper reads as emerging from underneath. Do not add `.felt` to the panel.
 - Stitched elements are positioned by the kit so their stitch always traces their own box. Overlays (dropdown panels, open flaps) carry explicit z-index above sibling cards; never wrap an overlay's ancestor in a new stacking context (isolation, transform, filter) or the overlay will paint beneath later siblings.
 - Respect the kit's `prefers-reduced-motion` block; add any new animation inside the same guard discipline.
 - One Tier 3 simulation (canvas or WebGPU cloth hero) per viewport at most, feature-detected, paused off-screen. See `frameworks.md` for the WebGPU posture.

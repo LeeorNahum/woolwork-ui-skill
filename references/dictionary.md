@@ -17,6 +17,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | Skeleton / loading placeholder | Basting: pale fabric held by loose temporary stitches | `.basting` (gently pulses; static under reduced motion) |
 | Empty state | A bare patch with a single tag explaining what will live there | Compose: `.felt` + `.tag` + muted `--ink-soft` text |
 | Decorative accent | A pompom of tied-off yarn | `.pompom` (dye with `--c`, resize with width/height; decoration only, never a control) |
+| Star rating | Die-cut sticker stars stuck to the board | `.stars` wrapping `.star` (dye with `--c`; `.star.empty` for an unfilled slot) |
 
 ## Buttons and actions
 
@@ -26,6 +27,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | Icon button | A round four-hole sewn button | `.sewn-button` |
 | Button group / segmented control | Patches sharing one stitch line | Compose: `.btn-patch` row with reduced gap; the active one uses the pressed-in shadow of `.pages [aria-current]` |
 | Link | A strand of thread couched under the text | `a.thread-link` (visited links show a straight backstitch) |
+| Close / dismiss | Two yarn strands tied into an X, the exact look the hamburger settles into | `button.yarn-x` with two `.yarn` children (dye the strands with `--c`) |
 | Floating action button | A larger sewn button pinned above the board | `.sewn-button` sized up, `position:fixed` |
 
 ## Forms
@@ -52,10 +54,10 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | UI element | Craft object | How |
 |---|---|---|
 | Navbar | A felt band across the top of the board | Compose: `.felt` full-width bar, brand text, `a.thread-link` items |
-| Tabs | Felt folder tabs stitched onto a shared panel; the open one lifts | `.tabs > button[aria-controls]` with `.tab-panel` targets (kit JS wires selection) |
+| Tabs | Felt folder tabs; the selected one sits flush and merges into the panel while the rest are recessed behind it (nothing floats above the board) | `.tabs > button[aria-controls]` with `.tab-panel` targets (kit JS wires selection) |
 | Breadcrumbs | Small tags strung on one thread | `ul.crumbs` with `a`/`span`, current item carries `aria-current` |
 | Pagination | A row of small patches; the current page is pressed in | `ul.pages`, current carries `aria-current` |
-| Dropdown menu | A fabric flap that unfolds | `details.flap` with `.panel` |
+| Dropdown menu | A slip of ruled paper slotted out from behind the trigger | `details.flap` with `.panel` (the panel is paper; do not add `.felt`) |
 | Hamburger | Three strands of yarn that pull into a cross | `button.strands` with three `.yarn` children |
 | Stepper / wizard | Beads strung on a yarn line, filled up to the current step | Compose: `.yarn` track with `.sewn-button` sized dots; completed ones dyed, current pressed in |
 | Skip link | A thread-link that appears on focus | `a.thread-link` positioned off-screen until `:focus` |
@@ -65,11 +67,11 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | UI element | Craft object | How |
 |---|---|---|
 | Modal | A note clipped or pinned over the board | `dialog.pinned` (native `showModal()`); pressing the board around the note closes it (kit JS) |
-| Pinned hardware | A steel gem paper clip slipped over the patch edge, or a closed safety pin | `.clip` / `.safety-pin`, placed with `.tl`/`.tr` or positioned by hand; decoration only |
+| Pinned hardware | A steel gem paper clip slipped over the patch edge, or a closed safety pin | `.clip` / `.safety-pin`, placed with `.tl`/`.tc`/`.tr` or positioned by hand; decoration only |
 | Drawer / sheet | A felt panel sliding in from an edge | Compose: `dialog.pinned` positioned to an edge, translate transition |
 | Tooltip | A paper tag tied on with thread | `[data-tip]` attribute |
 | Popover | A small flap panel | `details.flap` or a positioned `.felt.stitch` |
-| Toast / snackbar | A patch tossed onto the corner of the board | `woolwork.toast(message)` |
+| Toast / snackbar | Notes tacked to a corner tray, stacked in a column, each dismissable by a yarn-cross or a sideways swipe | `woolwork.toast(message)` (the kit builds and manages the `.toast-tray`) |
 | Alert / banner | A fabric strip pinned to the board | `.notice`, dye by severity (`--c: var(--rose)` for errors, butter for warnings, leaf for success) |
 | Badge | A tiny felt chip | `.chip`, dye by meaning |
 | Tag / label | A woven clothing label tacked at both ends | `.tag` |
