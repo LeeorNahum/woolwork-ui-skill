@@ -181,7 +181,9 @@
   function syncTabs(group){
     group.querySelectorAll('button[aria-controls]').forEach(function(b){
       var panel = document.getElementById(b.getAttribute('aria-controls'));
-      if(panel) panel.hidden = b.getAttribute('aria-selected') !== 'true';
+      var selected = b.getAttribute('aria-selected') === 'true';
+      b.tabIndex = selected ? 0 : -1;
+      if(panel) panel.hidden = !selected;
     });
   }
   document.querySelectorAll('.tabs').forEach(syncTabs);
@@ -192,9 +194,21 @@
     group.querySelectorAll('button').forEach(function(b){
       var sel = b === tab;
       b.setAttribute('aria-selected', sel ? 'true' : 'false');
+      b.tabIndex = sel ? 0 : -1;
       var panel = document.getElementById(b.getAttribute('aria-controls'));
       if(panel) panel.hidden = !sel;
     });
+  });
+  document.addEventListener('keydown', function(e){
+    var tab = e.target.closest ? e.target.closest('.tabs>button[role="tab"]') : null;
+    if(!tab || ['ArrowLeft','ArrowRight','Home','End'].indexOf(e.key) < 0) return;
+    var tabs = Array.from(tab.parentElement.querySelectorAll('button[role="tab"]'));
+    var i = tabs.indexOf(tab), next = i;
+    if(e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+    if(e.key === 'ArrowRight') next = (i + 1) % tabs.length;
+    if(e.key === 'Home') next = 0;
+    if(e.key === 'End') next = tabs.length - 1;
+    e.preventDefault(); tabs[next].focus(); tabs[next].click();
   });
 
   /* ---- Buttonhole toggles and hamburger strands ----
@@ -208,7 +222,9 @@
     }
     var b = e.target.closest('.strands');
     if(b){
-      b.setAttribute('aria-expanded', b.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
+      var open = b.getAttribute('aria-expanded') !== 'true';
+      b.setAttribute('aria-expanded', open ? 'true' : 'false');
+      b.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
     }
   });
 
@@ -237,7 +253,12 @@
   window.woolwork = window.woolwork || {};
   function toastTray(){
     var tray = document.querySelector('.toast-tray');
-    if(!tray){ tray = document.createElement('div'); tray.className = 'toast-tray'; document.body.appendChild(tray); }
+    if(!tray){
+      tray = document.createElement('div'); tray.className = 'toast-tray';
+      tray.setAttribute('role','region'); tray.setAttribute('aria-label','Notifications');
+      tray.setAttribute('aria-live','polite'); tray.setAttribute('aria-atomic','false');
+      document.body.appendChild(tray);
+    }
     return tray;
   }
   window.woolwork.toast = function(msg, ms){
@@ -248,11 +269,13 @@
     var label = document.createElement('span');
     label.textContent = msg; t.appendChild(label);
     var x = document.createElement('button');
-    x.type = 'button'; x.className = 'yarn-x'; x.setAttribute('aria-label','dismiss');
+    x.type = 'button'; x.className = 'yarn-x'; x.setAttribute('aria-label','Dismiss notification');
+    x.style.setProperty('--c','var(--thread-butter)');
     x.innerHTML = '<span class="yarn"></span><span class="yarn"></span>';
     x.querySelectorAll('.yarn').forEach(function(y){ y.style.setProperty('--c','var(--thread-butter)'); });
     t.appendChild(x);
-    toastTray().appendChild(t);
+    var tray = toastTray(); tray.appendChild(t);
+    while(tray.children.length > 4) tray.firstElementChild.remove();
     ensureThread(t);
     var timer = setTimeout(dismiss, ms || 3200);
     var gone = false;
@@ -261,7 +284,15 @@
       t.classList.add('leaving');
       setTimeout(function(){ t.remove(); }, 380);
     }
+    function restartTimer(){
+      clearTimeout(timer);
+      if(!gone) timer = setTimeout(dismiss, ms || 3200);
+    }
     x.addEventListener('click', dismiss);
+    t.addEventListener('pointerenter', function(){ clearTimeout(timer); });
+    t.addEventListener('pointerleave', restartTimer);
+    t.addEventListener('focusin', function(){ clearTimeout(timer); });
+    t.addEventListener('focusout', restartTimer);
     /* Swipe to dismiss: drag past a threshold flings the note off the board. */
     var startX = 0, dx = 0, dragging = false;
     t.addEventListener('pointerdown', function(e){

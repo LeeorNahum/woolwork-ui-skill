@@ -297,20 +297,14 @@ dialog.pinned::backdrop{background:rgba(40,28,18,.45);backdrop-filter:blur(1.5px
 dialog.pinned[open]{animation:pindrop .55s var(--spring)}
 @keyframes pindrop{from{transform:translateY(-26px) rotate(-2deg);opacity:0}to{transform:none;opacity:1}}
 /* ---------- PINNED HARDWARE: paper clips and safety pins ----------
-   Both are one bent steel wire, drawn as real silhouettes (a shadow pass under
-   a lit pass, honoring the top-left light). .clip is the classic double-loop
-   gem paper clip, slipped over the patch edge; .safety-pin is coil, bar, and
-   clasp. Position with .tl/.tr or place by hand. */
-.clip{position:absolute;width:23px;height:60px;pointer-events:none;z-index:3;
-  /* One bent steel wire drawn as the classic gem clip: an outer loop and a
-     shorter inner loop with the tell-tale straight tail. Each wire is layered
-     dark base -> silver body -> an offset white specular, so the round bar
-     reads as a lit tube under the top-left light. */
-  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 116'><g fill='none' stroke-linecap='round'><path d='M9 17 A13 13 0 0 1 35 17 V99 A13 13 0 0 1 9 99 Z' stroke='%238b9199' stroke-width='4.6'/><path d='M29.5 40 V88 A7.5 7.5 0 0 1 14.5 88 V30' stroke='%238b9199' stroke-width='4.6'/><path d='M9 17 A13 13 0 0 1 35 17 V99 A13 13 0 0 1 9 99 Z' stroke='%23ccd1d6' stroke-width='3.4'/><path d='M29.5 40 V88 A7.5 7.5 0 0 1 14.5 88 V30' stroke='%23ccd1d6' stroke-width='3.4'/><g transform='translate(-0.6,-0.9)' stroke='%23ffffff' stroke-width='1.15' opacity='0.9'><path d='M9 17 A13 13 0 0 1 35 17 V99 A13 13 0 0 1 9 99 Z'/><path d='M29.5 40 V88 A7.5 7.5 0 0 1 14.5 88 V30'/></g></g></svg>") center/contain no-repeat;
-  filter:drop-shadow(1px 2px 2px rgba(30,20,12,.34))}
-.clip.tl{left:18px;top:-22px;rotate:-8deg}
-.clip.tr{right:18px;top:-22px;rotate:7deg}
-.clip.tc{left:calc(50% - 11.5px);top:-23px;rotate:2deg}
+   Both are bent steel wire. The clip stays a thin, graphic silhouette so it
+   reads as ordinary hardware at interface scale instead of a chrome ornament. */
+.clip{position:absolute;width:20px;height:54px;pointer-events:none;z-index:3;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 108'><g fill='none' stroke-linecap='round' stroke-linejoin='round'><path d='M29 37 V18 A10 10 0 0 0 9 18 V89 A12 12 0 0 0 33 89 V31' stroke='%23565b61' stroke-width='4'/><path d='M29 37 V18 A10 10 0 0 0 9 18 V89 A12 12 0 0 0 33 89 V31' stroke='%23aeb2b4' stroke-width='2.35'/><path d='M28.2 36 V18 A9.2 9.2 0 0 0 9.8 18' stroke='%23eef0eb' stroke-width='.8' opacity='.72'/></g></svg>") center/contain no-repeat;
+  filter:drop-shadow(1px 2px 1px rgba(30,20,12,.28))}
+.clip.tl{left:20px;top:-16px;rotate:-7deg}
+.clip.tr{right:20px;top:-16px;rotate:6deg}
+.clip.tc{left:calc(50% - 10px);top:-17px;rotate:2deg}
 .safety-pin{position:absolute;width:64px;height:27px;pointer-events:none;
   background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 40'><defs><linearGradient id='m' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23f2efe6'/><stop offset='0.55' stop-color='%23cfc8b6'/><stop offset='1' stop-color='%23a89f8a'/></linearGradient></defs><g fill='none' stroke-linecap='round'><path d='M86.6 17.4 L22.6 13.4 A9.5 9.5 0 1 0 21.6 32.4 L79.6 30.4' stroke='rgba(60,45,25,0.35)' stroke-width='4.6'/><path d='M86 16 L22 12 A9.5 9.5 0 1 0 21 31 L79 29' stroke='url(%23m)' stroke-width='4'/><rect x='77' y='9.5' width='14' height='15' rx='5.5' fill='url(%23m)' stroke='rgba(60,45,25,0.3)' stroke-width='1.4'/></g></svg>") center/contain no-repeat;
   filter:drop-shadow(0 2px 2px rgba(30,20,12,.3))}
@@ -327,40 +321,46 @@ dialog.pinned[open]{animation:pindrop .55s var(--spring)}
   opacity:0;transition:opacity .2s}
 [data-tip]:hover::after,[data-tip]:focus-visible::after{opacity:1;translate:-50% 0}
 [data-tip]:hover::before,[data-tip]:focus-visible::before{opacity:1}
-/* ---------- HAMBURGER: three strands of yarn; open pulls them into a cross ---------- */
+/* ---------- HAMBURGER: three strands of yarn; open pulls them into a tied cross ---------- */
 .strands{width:46px;height:44px;border:0;cursor:pointer;background:transparent;position:relative;padding:0}
-.strands .yarn{position:absolute;left:7px;right:7px;height:6px;transition:translate .45s var(--spring),rotate .45s var(--spring),opacity .3s}
-.strands .yarn:nth-child(1){top:11px}
-.strands .yarn:nth-child(2){top:19px}
-.strands .yarn:nth-child(3){top:27px}
+.strands .yarn{position:absolute;left:8px;right:8px;height:4px;transition:translate .45s var(--spring),rotate .45s var(--spring),opacity .3s}
+.strands .yarn:nth-child(1){top:12px}
+.strands .yarn:nth-child(2){top:20px}
+.strands .yarn:nth-child(3){top:28px}
 .strands[aria-expanded="true"] .yarn:nth-child(1){translate:0 8px;rotate:45deg}
 .strands[aria-expanded="true"] .yarn:nth-child(2){opacity:0;translate:-8px 0}
 .strands[aria-expanded="true"] .yarn:nth-child(3){translate:0 -8px;rotate:-45deg}
+.strands::after{content:"";position:absolute;left:20px;top:18px;width:6px;height:6px;border-radius:50%;
+  background:var(--c,var(--cocoa));box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 1px 1px rgba(30,20,12,.3);
+  opacity:0;transition:opacity .2s .12s}
+.strands[aria-expanded="true"]::after{opacity:1}
 .strands:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px;border-radius:8px}
 /* ---------- YARN CROSS: two strands tied into an X ----------
    The exact stringy look the hamburger settles into, as a standalone piece:
    two ply-twisted .yarn strands crossed. Use as a close/dismiss control or a
    decorative X. Dye the strands with --c like any yarn. ---------- */
 .yarn-x{width:34px;height:34px;border:0;cursor:pointer;background:transparent;position:relative;padding:0;flex:none;
-  transition:rotate .4s var(--spring)}
-.yarn-x .yarn{position:absolute;left:3px;right:3px;top:calc(50% - 3px);height:6px}
+  transition:rotate .4s var(--spring),translate .12s ease-out}
+.yarn-x .yarn{position:absolute;left:4px;right:4px;top:calc(50% - 2px);height:4px}
 .yarn-x .yarn:nth-child(1){rotate:45deg}
 .yarn-x .yarn:nth-child(2){rotate:-45deg}
+.yarn-x::after{content:"";position:absolute;left:14px;top:14px;width:6px;height:6px;border-radius:50%;
+  background:var(--c,var(--cocoa));box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 1px 1px rgba(30,20,12,.3)}
 .yarn-x:hover{rotate:90deg}
-.yarn-x:active{scale:.92}
+.yarn-x:active{translate:0 1.5px}
 .yarn-x:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px;border-radius:8px}
 /* ---------- TOAST: notes tacked to the board corner, stacked in a tray ----------
    The kit appends toasts to one fixed .toast-tray so they stack in a column
    (newest lowest) with real gaps instead of piling on the same spot. Each
    carries a yarn-cross dismiss and can be swiped away sideways. */
 .toast-tray{position:fixed;right:18px;bottom:18px;z-index:99;display:flex;flex-direction:column-reverse;
-  gap:12px;align-items:flex-end;pointer-events:none;max-width:min(92vw,340px)}
-.toast{position:relative;pointer-events:auto;padding:13px 46px 13px 20px;font-weight:700;max-width:340px;
-  animation:tack .5s var(--spring);touch-action:pan-y}
+  gap:10px;align-items:stretch;pointer-events:none;width:min(calc(100vw - 36px),340px)}
+.toast{position:relative;box-sizing:border-box;pointer-events:auto;padding:13px 48px 13px 18px;font-weight:700;width:100%;
+  animation:tack .5s var(--spring);touch-action:pan-y;contain:layout}
 @keyframes tack{from{translate:0 24px;rotate:2deg;opacity:0}to{translate:0 0;rotate:0deg;opacity:1}}
 .toast.leaving{transition:opacity .3s,translate .35s var(--spring);opacity:0;translate:0 24px}
 .toast.swiping{transition:none;cursor:grab;user-select:none}
-.toast .yarn-x{position:absolute;top:calc(50% - 13px);right:9px;width:26px;height:26px}
+.toast .yarn-x{position:absolute;top:calc(50% - 16px);right:8px;width:32px;height:32px}
 /* ---------- RADIO: a snap fastener; only one snaps in per group ---------- */
 .snap-radio{appearance:none;width:26px;height:26px;border-radius:50%;cursor:pointer;position:relative;flex:none;
   background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.55),transparent 48%),
@@ -375,30 +375,33 @@ dialog.pinned[open]{animation:pindrop .55s var(--spring)}
 .snap-radio:checked::after{opacity:1;transform:scale(1)}
 .snap-radio:active{translate:0 1.5px}
 .snap-radio:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px}
-/* ---------- SELECT: a pocket with a thread pull ---------- */
-select.pocket{appearance:none;cursor:pointer;padding-right:40px;
-  /* The thread pull is drawn twice, a light copy under a cocoa copy, so it
-     stays legible on both day and night pockets (a data URI cannot read tokens). */
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='12'><path d='M2 3.2 L8 9.2 L14 3.2' fill='none' stroke='rgba(255,252,242,0.55)' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/><path d='M2 2 L8 8 L14 2' fill='none' stroke='%237a5c49' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"),var(--grain);
-  background-repeat:no-repeat,repeat;background-position:right 14px center,0 0;
-  background-size:16px 12px,140px 140px;background-blend-mode:normal,overlay}
+/* ---------- SELECT: a paper choice slip tucked into a dark felt slot ---------- */
+select.pocket{appearance:none;cursor:pointer;padding:12px 42px 12px 16px;border-radius:3px 2px 4px 3px;
+  background-color:var(--paper);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='12'><path d='M2 2 L8 8 L14 2' fill='none' stroke='%237a5c49' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/></svg>"),
+    repeating-linear-gradient(0deg,rgba(122,92,73,.035) 0 1px,transparent 1px 4px),
+    linear-gradient(180deg,color-mix(in srgb,var(--paper) 90%,white),var(--paper));
+  background-repeat:no-repeat,repeat,no-repeat;background-position:right 14px center,0 0,0 0;
+  background-size:16px 12px,100% 100%,100% 100%;background-blend-mode:normal,multiply,normal;
+  box-shadow:-8px 0 8px -7px rgba(30,18,10,.65),8px 0 8px -7px rgba(30,18,10,.65),
+    inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 0 rgba(122,92,73,.16),0 2px 2px rgba(30,20,12,.14)}
+select.pocket:focus{box-shadow:-8px 0 8px -7px rgba(30,18,10,.65),8px 0 8px -7px rgba(30,18,10,.65),
+  inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 0 rgba(122,92,73,.16),
+  0 0 0 3px color-mix(in srgb,var(--rose) 40%,transparent)}
 textarea.pocket{min-height:96px;resize:vertical;font:inherit}
-/* ---------- TABS: felt folder tabs stitched onto a shared panel ----------
-   Folder physics without anything floating over the board: unselected tabs are
-   recessed (pushed down, dyed toward the board, with a pressed-back inner
-   shadow) and tuck behind the panel; the selected tab sits flush at full dye
-   and overlaps the panel's top edge so it reads as the connected front leaf,
-   never a tab hovering above the panel. */
-.tabs{display:flex;gap:6px;padding:0 12px}
+/* ---------- TABS: same-plane felt choices, with the selected one sewn down ----------
+   Every tab stays on the panel instead of rising above it. Selection is shown
+   by full dye, an inset settle, and a thread ring. */
+.tabs{display:flex;gap:8px;padding:0 0 12px;flex-wrap:wrap}
 .tabs>button{border:0;cursor:pointer;color:var(--ink);font:700 .95rem var(--font-display);
-  padding:9px 18px 15px;margin-bottom:-8px;border-radius:12px 14px 0 0;translate:0 4px;
+  padding:9px 18px;border-radius:10px 13px 9px 12px;translate:none;
   background-color:color-mix(in srgb,var(--c,var(--cream)) 55%,var(--board));
   background-image:var(--grain);background-size:140px 140px;background-blend-mode:overlay;
-  box-shadow:inset 0 -6px 8px -4px rgba(30,18,10,.28),inset 0 2px 0 rgba(255,252,242,.16);
-  transition:translate .35s var(--spring),background-color .25s,box-shadow .25s}
-.tabs>button[aria-selected="true"]{background-color:var(--c,var(--cream));translate:0 0;
-  position:relative;z-index:1;padding-bottom:18px;
-  box-shadow:inset 0 2px 0 var(--hi),2px 0 3px -2px rgba(30,20,12,.22),-2px 0 3px -2px rgba(30,20,12,.22)}
+  box-shadow:inset 0 2px 0 rgba(255,252,242,.2),inset 0 -3px 5px rgba(30,18,10,.2),0 1px 1px rgba(30,20,12,.18);
+  transition:background-color .25s,box-shadow .25s,translate .35s var(--spring)}
+.tabs>button[aria-selected="true"]{background-color:var(--c,var(--cream));translate:0 1px;
+  box-shadow:inset 0 3px 6px rgba(30,18,10,.28),inset 0 -1px 0 rgba(255,252,242,.28),
+    inset 0 0 0 2px var(--t,var(--cocoa)),0 1px 0 rgba(255,252,242,.2)}
 .tabs>button:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px}
 .tab-panel[hidden]{display:none}
 /* ---------- BREADCRUMBS: tags strung on one thread ---------- */
