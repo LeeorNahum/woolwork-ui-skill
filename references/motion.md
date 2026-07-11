@@ -39,6 +39,7 @@ Rules:
 
 - Only transform and opacity animate per frame. Never transition `filter`, `border`, `box-shadow` in a loop (single-shot hover shadow transitions are fine).
 - `details.flap` panels must stay absolutely positioned; converting them to in-flow will reflow the page on open.
+- The enhanced select keeps a real native select for form submission and no-JavaScript fallback. Its paper options unfold from the felt slot with alternating static fold faces and transform-only motion. Closing reverses the folds without moving surrounding layout.
 - Keep toasts and modals outside component containers; the kit appends at most four toasts to one fixed `.toast-tray` on body (so they stack in a column, each dismissable by its yarn-cross or a sideways swipe) and uses the native dialog top layer for modals. A toast pauses its timer while hovered or focused.
 - The dropdown flap panel is a slip of paper that slides down out of a slot behind its trigger; the trigger must stay above it (the kit gives `.flap>summary` a higher `z-index`) so the paper reads as emerging from underneath. Do not add `.felt` to the panel.
 - Stitched elements are positioned by the kit so their stitch always traces their own box. Overlays (dropdown panels, open flaps) carry explicit z-index above sibling cards; never wrap an overlay's ancestor in a new stacking context (isolation, transform, filter) or the overlay will paint beneath later siblings.

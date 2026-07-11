@@ -174,6 +174,106 @@
     document.querySelectorAll('.sew-check.pre').forEach(function(el){ el.classList.remove('pre'); });
   }, {passive:true});
 
+  /* ---- Paper selects: the native select remains the form value and no-JS
+     fallback; the visible control is a sheet tucked into a felt slot whose
+     choices unfold as alternating concertina folds. ---- */
+  function enhancePaperSelect(select, index){
+    if(select.dataset.wwPaperSelect) return;
+    select.dataset.wwPaperSelect = 'true';
+
+    var slot = document.createElement('div');
+    slot.className = 'select-slot'; slot.dataset.open = 'false';
+    select.parentNode.insertBefore(slot, select); slot.appendChild(select);
+
+    var base = select.id || ('ww-paper-select-' + index);
+    var listId = base + '-paper-options';
+    var trigger = document.createElement('button');
+    trigger.type = 'button'; trigger.className = 'paper-choice';
+    trigger.setAttribute('role','combobox'); trigger.setAttribute('aria-haspopup','listbox');
+    trigger.setAttribute('aria-expanded','false'); trigger.setAttribute('aria-controls',listId);
+    var value = document.createElement('span'); value.className = 'paper-choice-value'; value.id = base + '-paper-value';
+    trigger.appendChild(value);
+
+    var folds = document.createElement('div');
+    folds.className = 'paper-folds'; folds.id = listId; folds.setAttribute('role','listbox');
+    var paperOptions = [];
+    Array.from(select.options).forEach(function(option, i){
+      var paper = document.createElement('div');
+      paper.className = 'paper-option'; paper.id = base + '-paper-option-' + i;
+      paper.setAttribute('role','option'); paper.textContent = option.textContent;
+      paper.dataset.value = option.value; paper.style.setProperty('--fold', String(i + 1));
+      paper.style.setProperty('--fold-delay', ((i + 1) * 45) + 'ms');
+      paper.style.setProperty('--fold-angle', i % 2 ? '-82deg' : '82deg');
+      paper.style.setProperty('--rest-angle', i % 2 ? '-1.6deg' : '1.6deg');
+      folds.appendChild(paper); paperOptions.push(paper);
+    });
+    slot.insertBefore(trigger, select); slot.appendChild(folds);
+    select.tabIndex = -1; select.setAttribute('aria-hidden','true');
+
+    var label = select.id ? document.querySelector('label[for="' + CSS.escape(select.id) + '"]') : select.closest('label');
+    if(label){
+      if(!label.id) label.id = base + '-label';
+      trigger.setAttribute('aria-labelledby', label.id + ' ' + value.id);
+      label.addEventListener('click', function(e){ e.preventDefault(); trigger.focus(); });
+    }
+
+    var active = Math.max(0, select.selectedIndex);
+    function sync(){
+      active = Math.max(0, select.selectedIndex);
+      value.textContent = select.options[active] ? select.options[active].textContent : '';
+      paperOptions.forEach(function(paper, i){
+        paper.setAttribute('aria-selected', i === active ? 'true' : 'false');
+        paper.dataset.active = i === active ? 'true' : 'false';
+      });
+      trigger.setAttribute('aria-activedescendant', paperOptions[active] ? paperOptions[active].id : '');
+      trigger.disabled = select.disabled;
+    }
+    function setActive(i){
+      active = Math.max(0, Math.min(paperOptions.length - 1, i));
+      paperOptions.forEach(function(paper, n){ paper.dataset.active = n === active ? 'true' : 'false'; });
+      if(paperOptions[active]) trigger.setAttribute('aria-activedescendant', paperOptions[active].id);
+    }
+    function setOpen(open){
+      if(trigger.disabled) open = false;
+      slot.dataset.open = open ? 'true' : 'false';
+      trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if(open) setActive(Math.max(0, select.selectedIndex));
+    }
+    function choose(i){
+      if(!select.options[i] || select.options[i].disabled) return;
+      select.selectedIndex = i; sync(); setOpen(false);
+      select.dispatchEvent(new Event('change',{bubbles:true})); trigger.focus();
+    }
+
+    trigger.addEventListener('click', function(){ setOpen(slot.dataset.open !== 'true'); });
+    trigger.addEventListener('keydown', function(e){
+      var open = slot.dataset.open === 'true';
+      if(e.key === 'Escape' && open){ e.preventDefault(); setOpen(false); return; }
+      if(e.key === 'Tab'){ setOpen(false); return; }
+      if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+        e.preventDefault(); if(!open){ setOpen(true); return; }
+        setActive(active + (e.key === 'ArrowDown' ? 1 : -1)); return;
+      }
+      if(e.key === 'Home' && open){ e.preventDefault(); setActive(0); return; }
+      if(e.key === 'End' && open){ e.preventDefault(); setActive(paperOptions.length - 1); return; }
+      if((e.key === 'Enter' || e.key === ' ') && open){ e.preventDefault(); choose(active); }
+    });
+    folds.addEventListener('pointerdown', function(e){ e.preventDefault(); });
+    folds.addEventListener('click', function(e){
+      var paper = e.target.closest ? e.target.closest('.paper-option') : null;
+      if(paper) choose(paperOptions.indexOf(paper));
+    });
+    folds.addEventListener('pointermove', function(e){
+      var paper = e.target.closest ? e.target.closest('.paper-option') : null;
+      if(paper) setActive(paperOptions.indexOf(paper));
+    });
+    document.addEventListener('pointerdown', function(e){ if(!slot.contains(e.target)) setOpen(false); });
+    select.addEventListener('change', sync);
+    if(select.form) select.form.addEventListener('reset', function(){ setTimeout(sync); });
+    sync();
+  }
+  document.querySelectorAll('select.pocket').forEach(enhancePaperSelect);
+
   /* ---- Tabs: one selected folder tab, its panel shown, siblings hidden ----
      Markup: .tabs > button[aria-controls=panelId]; panels are .tab-panel.
      Panels sync to the selected tab at init, so markup can ship every panel

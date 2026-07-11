@@ -321,33 +321,27 @@ dialog.pinned[open]{animation:pindrop .55s var(--spring)}
   opacity:0;transition:opacity .2s}
 [data-tip]:hover::after,[data-tip]:focus-visible::after{opacity:1;translate:-50% 0}
 [data-tip]:hover::before,[data-tip]:focus-visible::before{opacity:1}
-/* ---------- HAMBURGER: three strands of yarn; open pulls them into a tied cross ---------- */
+/* ---------- HAMBURGER: three equal strands of yarn; open pulls them into a cross ---------- */
 .strands{width:46px;height:44px;border:0;cursor:pointer;background:transparent;position:relative;padding:0}
-.strands .yarn{position:absolute;left:8px;right:8px;height:4px;transition:translate .45s var(--spring),rotate .45s var(--spring),opacity .3s}
-.strands .yarn:nth-child(1){top:12px}
-.strands .yarn:nth-child(2){top:20px}
-.strands .yarn:nth-child(3){top:28px}
+.strands .yarn{position:absolute;left:7px;right:7px;height:6px;transition:translate .45s var(--spring),rotate .45s var(--spring),opacity .3s}
+.strands .yarn:nth-child(1){top:11px}
+.strands .yarn:nth-child(2){top:19px}
+.strands .yarn:nth-child(3){top:27px}
 .strands[aria-expanded="true"] .yarn:nth-child(1){translate:0 8px;rotate:45deg}
 .strands[aria-expanded="true"] .yarn:nth-child(2){opacity:0;translate:-8px 0}
 .strands[aria-expanded="true"] .yarn:nth-child(3){translate:0 -8px;rotate:-45deg}
-.strands::after{content:"";position:absolute;left:20px;top:18px;width:6px;height:6px;border-radius:50%;
-  background:var(--c,var(--cocoa));box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 1px 1px rgba(30,20,12,.3);
-  opacity:0;transition:opacity .2s .12s}
-.strands[aria-expanded="true"]::after{opacity:1}
 .strands:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px;border-radius:8px}
 /* ---------- YARN CROSS: two strands tied into an X ----------
    The exact stringy look the hamburger settles into, as a standalone piece:
    two ply-twisted .yarn strands crossed. Use as a close/dismiss control or a
    decorative X. Dye the strands with --c like any yarn. ---------- */
 .yarn-x{width:34px;height:34px;border:0;cursor:pointer;background:transparent;position:relative;padding:0;flex:none;
-  transition:rotate .4s var(--spring),translate .12s ease-out}
-.yarn-x .yarn{position:absolute;left:4px;right:4px;top:calc(50% - 2px);height:4px}
+  transition:rotate .4s var(--spring)}
+.yarn-x .yarn{position:absolute;left:3px;right:3px;top:calc(50% - 3px);height:6px}
 .yarn-x .yarn:nth-child(1){rotate:45deg}
 .yarn-x .yarn:nth-child(2){rotate:-45deg}
-.yarn-x::after{content:"";position:absolute;left:14px;top:14px;width:6px;height:6px;border-radius:50%;
-  background:var(--c,var(--cocoa));box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 1px 1px rgba(30,20,12,.3)}
 .yarn-x:hover{rotate:90deg}
-.yarn-x:active{translate:0 1.5px}
+.yarn-x:active{scale:.92}
 .yarn-x:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px;border-radius:8px}
 /* ---------- TOAST: notes tacked to the board corner, stacked in a tray ----------
    The kit appends toasts to one fixed .toast-tray so they stack in a column
@@ -375,7 +369,7 @@ dialog.pinned[open]{animation:pindrop .55s var(--spring)}
 .snap-radio:checked::after{opacity:1;transform:scale(1)}
 .snap-radio:active{translate:0 1.5px}
 .snap-radio:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px}
-/* ---------- SELECT: a paper choice slip tucked into a dark felt slot ---------- */
+/* ---------- SELECT FALLBACK: native paper slip when JavaScript is absent ---------- */
 select.pocket{appearance:none;cursor:pointer;padding:12px 42px 12px 16px;border-radius:3px 2px 4px 3px;
   background-color:var(--paper);
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='12'><path d='M2 2 L8 8 L14 2' fill='none' stroke='%237a5c49' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/></svg>"),
@@ -388,20 +382,72 @@ select.pocket{appearance:none;cursor:pointer;padding:12px 42px 12px 16px;border-
 select.pocket:focus{box-shadow:-8px 0 8px -7px rgba(30,18,10,.65),8px 0 8px -7px rgba(30,18,10,.65),
   inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 0 rgba(122,92,73,.16),
   0 0 0 3px color-mix(in srgb,var(--rose) 40%,transparent)}
+/* JavaScript wraps the real select in a felt cutout. The paper sits behind the
+   upper lip and in front of the lower lip, then unfolds into concertina folds. */
+.select-slot{position:relative;width:100%;min-width:0;padding:7px 9px 8px;isolation:isolate;
+  border-radius:9px 12px 10px 13px;background:color-mix(in srgb,var(--c,var(--cream)) 72%,black 12%);
+  box-shadow:inset 0 7px 8px -4px rgba(30,18,10,.62),inset 0 -3px 3px rgba(255,252,242,.28)}
+.select-slot[data-open="true"]{z-index:63}
+.select-slot::before,.select-slot::after{content:"";position:absolute;left:0;right:0;pointer-events:none;
+  background-color:var(--c,var(--cream));background-image:var(--grain);background-size:140px 140px;background-blend-mode:overlay}
+.select-slot::before{top:0;height:10px;z-index:4;border-radius:9px 12px 2px 2px;
+  box-shadow:0 3px 4px rgba(30,18,10,.34),inset 0 1px 0 var(--hi)}
+.select-slot::after{bottom:0;height:8px;z-index:1;border-radius:2px 2px 10px 13px;
+  box-shadow:inset 0 2px 3px rgba(30,18,10,.25),0 -1px 0 rgba(255,252,242,.24)}
+.select-slot select.pocket{position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none}
+.paper-choice{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;min-height:44px;padding:12px 14px 10px;border:0;cursor:pointer;text-align:left;color:var(--ink);
+  font:600 1rem var(--font-body);border-radius:2px 3px 4px 2px;rotate:-.12deg;
+  background-color:var(--paper);background-image:repeating-linear-gradient(0deg,rgba(122,92,73,.035) 0 1px,transparent 1px 4px),
+    linear-gradient(180deg,color-mix(in srgb,var(--paper) 90%,white),var(--paper));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.82),inset 0 -1px 0 rgba(122,92,73,.17),
+    -5px 0 5px -5px rgba(30,18,10,.5),5px 0 5px -5px rgba(30,18,10,.5),0 2px 2px rgba(30,20,12,.18)}
+.paper-choice::after{content:"";width:9px;height:9px;flex:none;border-right:2px solid var(--cocoa);
+  border-bottom:2px solid var(--cocoa);rotate:45deg;translate:0 -2px;transition:rotate .35s var(--spring),translate .35s var(--spring)}
+.select-slot[data-open="true"] .paper-choice::after{rotate:225deg;translate:0 3px}
+.paper-choice:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:4px}
+.paper-folds{position:absolute;left:9px;right:9px;top:calc(100% - 9px);z-index:62;perspective:700px;
+  pointer-events:none;visibility:hidden;transform-style:preserve-3d;transition:visibility 0s .45s}
+.select-slot[data-open="true"] .paper-folds{pointer-events:auto;visibility:visible;transition-delay:0s}
+.paper-option{position:relative;display:block;width:100%;padding:10px 14px;border:0;cursor:pointer;text-align:left;
+  color:var(--ink);font:600 .95rem var(--font-body);background-color:var(--paper);
+  background-image:linear-gradient(180deg,rgba(255,255,255,.5),transparent 42%,rgba(122,92,73,.08)),
+    repeating-linear-gradient(0deg,rgba(122,92,73,.035) 0 1px,transparent 1px 4px);
+  clip-path:polygon(0 0,100% 0,98.5% 50%,100% 100%,0 100%,1.5% 50%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.74),inset 0 -1px 0 rgba(122,92,73,.25),0 2px 3px rgba(30,20,12,.2);
+  transform-origin:50% 0;transform:translateY(calc(var(--fold) * -9px)) rotateX(var(--fold-angle));opacity:0;
+  transition:transform .42s var(--spring),opacity .18s ease}
+.paper-option:nth-child(odd){background-image:linear-gradient(174deg,rgba(255,255,255,.66) 0 47%,rgba(122,92,73,.12) 52% 100%),
+  repeating-linear-gradient(0deg,rgba(122,92,73,.035) 0 1px,transparent 1px 4px)}
+.paper-option:nth-child(even){background-image:linear-gradient(186deg,rgba(122,92,73,.11) 0 48%,rgba(255,255,255,.62) 53% 100%),
+  repeating-linear-gradient(0deg,rgba(122,92,73,.035) 0 1px,transparent 1px 4px)}
+.select-slot[data-open="true"] .paper-option{transform:translateY(0) rotateX(var(--rest-angle));opacity:1;
+  transition-delay:var(--fold-delay)}
+.paper-option[aria-selected="true"]{font-weight:800;
+  background-color:color-mix(in srgb,var(--paper) 70%,var(--butter));
+  box-shadow:inset 4px 0 0 var(--thread-butter),inset 0 1px 0 rgba(255,255,255,.74),inset 0 -1px 0 rgba(122,92,73,.25)}
+.paper-option[data-active="true"],.paper-option:hover{box-shadow:inset 4px 0 0 var(--thread-sky),
+  inset 0 1px 0 rgba(255,255,255,.74),inset 0 -1px 0 rgba(122,92,73,.25),0 2px 3px rgba(30,20,12,.2)}
 textarea.pocket{min-height:96px;resize:vertical;font:inherit}
-/* ---------- TABS: same-plane felt choices, with the selected one sewn down ----------
-   Every tab stays on the panel instead of rising above it. Selection is shown
-   by full dye, an inset settle, and a thread ring. */
-.tabs{display:flex;gap:8px;padding:0 0 12px;flex-wrap:wrap}
+/* ---------- TABS: hand-cut fabric tabs resting on their own stitched rail ----------
+   They keep the familiar tab silhouette without growing out of the content panel. */
+.tabs{position:relative;display:flex;align-items:flex-end;gap:6px;padding:0 10px 4px;overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs::after{content:"";position:absolute;left:0;right:0;bottom:1px;height:3px;border-radius:2px;
+  background:var(--t,var(--thread-sky));box-shadow:0 1px 0 rgba(255,252,242,.45)}
 .tabs>button{border:0;cursor:pointer;color:var(--ink);font:700 .95rem var(--font-display);
-  padding:9px 18px;border-radius:10px 13px 9px 12px;translate:none;
-  background-color:color-mix(in srgb,var(--c,var(--cream)) 55%,var(--board));
+  position:relative;z-index:1;flex:0 0 auto;padding:11px clamp(10px,2vw,22px) 10px;translate:none;
+  clip-path:polygon(9px 0,calc(100% - 12px) 1px,100% 100%,0 100%);
+  background-color:color-mix(in srgb,var(--c,var(--cream)) 30%,var(--cream));
   background-image:var(--grain);background-size:140px 140px;background-blend-mode:overlay;
-  box-shadow:inset 0 2px 0 rgba(255,252,242,.2),inset 0 -3px 5px rgba(30,18,10,.2),0 1px 1px rgba(30,20,12,.18);
+  box-shadow:inset 0 2px 0 rgba(255,252,242,.35),inset 0 -4px 5px rgba(30,18,10,.2);
   transition:background-color .25s,box-shadow .25s,translate .35s var(--spring)}
-.tabs>button[aria-selected="true"]{background-color:var(--c,var(--cream));translate:0 1px;
-  box-shadow:inset 0 3px 6px rgba(30,18,10,.28),inset 0 -1px 0 rgba(255,252,242,.28),
-    inset 0 0 0 2px var(--t,var(--cocoa)),0 1px 0 rgba(255,252,242,.2)}
+.tabs>button::after{content:"";position:absolute;inset:5px 7px 3px;border:2px dashed var(--t,var(--thread-cream));
+  clip-path:polygon(5px 0,calc(100% - 6px) 0,100% 100%,0 100%);opacity:.52}
+.tabs>button[aria-selected="true"]{z-index:2;background-color:var(--c,var(--cream));translate:0 3px;
+  box-shadow:inset 0 2px 0 var(--hi),inset 0 -3px 5px var(--lo)}
+.tabs>button[aria-selected="true"]::after{opacity:.88}
 .tabs>button:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px}
 .tab-panel[hidden]{display:none}
 /* ---------- BREADCRUMBS: tags strung on one thread ---------- */
