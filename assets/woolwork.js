@@ -198,13 +198,14 @@
     folds.className = 'paper-folds'; folds.id = listId; folds.setAttribute('role','listbox');
     var paperOptions = [];
     Array.from(select.options).forEach(function(option, i){
-      var paper = document.createElement('div');
+      var paper = document.createElement('button');
       paper.className = 'paper-option'; paper.id = base + '-paper-option-' + i;
       paper.setAttribute('role','option'); paper.textContent = option.textContent;
       paper.dataset.value = option.value; paper.style.setProperty('--fold', String(i + 1));
       paper.style.setProperty('--fold-delay', ((i + 1) * 45) + 'ms');
+      paper.style.setProperty('--fold-close-delay', ((select.options.length - i) * 45) + 'ms');
       paper.style.setProperty('--fold-angle', i % 2 ? '-82deg' : '82deg');
-      paper.style.setProperty('--rest-angle', i % 2 ? '-1.6deg' : '1.6deg');
+      paper.type = 'button';
       folds.appendChild(paper); paperOptions.push(paper);
     });
     slot.insertBefore(trigger, select); slot.appendChild(folds);
@@ -258,7 +259,6 @@
       if(e.key === 'End' && open){ e.preventDefault(); setActive(paperOptions.length - 1); return; }
       if((e.key === 'Enter' || e.key === ' ') && open){ e.preventDefault(); choose(active); }
     });
-    folds.addEventListener('pointerdown', function(e){ e.preventDefault(); });
     folds.addEventListener('click', function(e){
       var paper = e.target.closest ? e.target.closest('.paper-option') : null;
       if(paper) choose(paperOptions.indexOf(paper));
