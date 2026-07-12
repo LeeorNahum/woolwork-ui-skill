@@ -105,7 +105,10 @@
   function drawThread(el){
     var rec = el._wwThread; if(!rec || rec.drawn) return;
     var lead = rec.lead;
-    lead.style.transition = 'stroke-dashoffset 1.6s ease-in-out .15s';
+    /* The patch fade reaches full opacity before the thread starts. Drawing
+       through the parent's fade would make the exact same thread look pale
+       at the start and darker after settling. */
+    lead.style.transition = 'stroke-dashoffset 1.6s ease-in-out .65s';
     requestAnimationFrame(function(){ requestAnimationFrame(function(){
       lead.style.strokeDashoffset = '0';
     });});
@@ -113,7 +116,7 @@
     setTimeout(function(){
       if(rec.defs){ rec.defs.remove(); rec.defs = null; }
       rec.path.removeAttribute('mask'); rec.lead = null;
-    }, 1850);
+    }, 2350);
   }
 
   var io;
@@ -214,8 +217,8 @@
       var paperLabel = document.createElement('span'); paperLabel.className = 'paper-option-label';
       paperLabel.textContent = option.textContent; paper.appendChild(paperLabel);
       paper.dataset.value = option.value; paper.style.setProperty('--fold', String(i + 1));
-      paper.style.setProperty('--fold-delay', ((i + 1) * 45) + 'ms');
-      paper.style.setProperty('--fold-close-delay', ((select.options.length - i) * 45) + 'ms');
+      paper.style.setProperty('--fold-delay', (i * 55) + 'ms');
+      paper.style.setProperty('--fold-close-delay', ((select.options.length - 1 - i) * 55) + 'ms');
       paper.style.setProperty('--fold-angle', i % 2 ? '-82deg' : '82deg');
       paper.type = 'button';
       folds.appendChild(paper); paperOptions.push(paper);
@@ -223,13 +226,11 @@
     slot.insertBefore(trigger, select); slot.appendChild(folds);
     select.tabIndex = -1; select.setAttribute('aria-hidden','true');
 
-    /* The panel must stay visible exactly as long as the slowest fold is
-       still moving, no longer: the last option to close carries the
-       longest --fold-close-delay, plus the opacity fade duration, plus a
-       small buffer. A fixed constant either flashes the panel away mid-fold
-       (fewer options) or leaves an invisible-but-present box lingering
-       (more options); this scales with the real option count instead. */
-    slot.style.setProperty('--fold-hide-delay', (select.options.length * 45 + 260) + 'ms');
+    /* Keep both visibility and stacking height until the slowest reverse
+       fold has completed its 420ms transform. The previous opacity-based
+       duration hid the panel while that transform was still running. */
+    var foldCloseMs = Math.max(0, select.options.length - 1) * 55 + 450;
+    slot.style.setProperty('--fold-hide-delay', foldCloseMs + 'ms');
 
     var label = select.id ? document.querySelector('label[for="' + CSS.escape(select.id) + '"]') : select.closest('label');
     if(label){
@@ -254,8 +255,16 @@
       paperOptions.forEach(function(paper, n){ paper.dataset.active = n === active ? 'true' : 'false'; });
       if(paperOptions[active]) trigger.setAttribute('aria-activedescendant', paperOptions[active].id);
     }
+    var closeTimer = 0;
     function setOpen(open){
       if(trigger.disabled) open = false;
+      clearTimeout(closeTimer);
+      if(open){
+        delete slot.dataset.closing;
+      }else if(slot.dataset.open === 'true'){
+        slot.dataset.closing = 'true';
+        closeTimer = setTimeout(function(){ delete slot.dataset.closing; }, foldCloseMs);
+      }
       slot.dataset.open = open ? 'true' : 'false';
       trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
       if(open) setActive(Math.max(0, select.selectedIndex));

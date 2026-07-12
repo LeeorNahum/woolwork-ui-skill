@@ -57,7 +57,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | UI element | Craft object | How |
 |---|---|---|
 | Navbar | A felt band across the top of the board | Compose: `.felt` full-width bar, brand text, `a.thread-link` items |
-| Tabs | Hand-cut fabric labels tucked behind the content card; the selected tab fills with its dye and settles into the card edge | `.tabs > button[aria-controls]` with `.tab-panel` targets (kit JS wires click and arrow-key selection). The face is flat vector geometry (a crisp corner radius), never a 3D `rotateX` lean: rasterizing a textured background through a perspective transform shows visible jagged edges on the slanted side at any zoom other than 100% |
+| Tabs | Hand-cut fabric labels tucked behind the content card; unselected tabs rest slightly down in the rail, while the selected tab fills with its dye and lifts to the neutral top edge | `.tabs > button[aria-controls]` with `.tab-panel` targets (kit JS wires click and arrow-key selection). The face is flat vector geometry (a crisp corner radius), never a 3D `rotateX` lean: rasterizing a textured background through a perspective transform shows visible jagged edges on the slanted side at any zoom other than 100% |
 | Breadcrumbs | Small tags strung on one thread | `ul.crumbs` with `a`/`span`, current item carries `aria-current` |
 | Pagination | A row of small patches; the current page is pressed in | `ul.pages`, current carries `aria-current` |
 | Dropdown menu | A slip of paper slotted out from behind the trigger | `details.flap` with `.panel` (the panel is paper; do not add `.felt`) |
