@@ -36,7 +36,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 |---|---|---|
 | Text input | A pocket: a slit cut into the felt, contents tucked inside | `input.pocket` |
 | Textarea | A deeper pocket | `textarea.pocket` |
-| Select | A paper choice slip tucked between the two lips of a felt cutout; its choices unfold as concertina paper | `select.pocket` (kit JS keeps the real select for form submission and builds the paper control) |
+| Select | A paper choice slip resting inside one recessed felt pocket; its choices unfold as opaque concertina paper | `select.pocket` (kit JS keeps the real select for form submission and builds the paper control) |
 | Checkbox | A four-hole button cross-stitched when checked, one thread stroke per press phase | `input.sew-check` |
 | Radio | A snap fastener; checking snaps the stud in, only one per group | `input.snap-radio` |
 | Switch / toggle | A buttonhole; the knob is a small sewn button sliding through it | `button.buttonhole[aria-pressed]` with `.knob` |
@@ -54,7 +54,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | UI element | Craft object | How |
 |---|---|---|
 | Navbar | A felt band across the top of the board | Compose: `.felt` full-width bar, brand text, `a.thread-link` items |
-| Tabs | Hand-cut fabric tabs resting on a stitched rail, separate from the content panel; the selected tab fills with its dye and settles over the rail | `.tabs > button[aria-controls]` with `.tab-panel` targets (kit JS wires click and arrow-key selection) |
+| Tabs | Hand-cut fabric labels tucked behind the content card; the selected tab fills with its dye and settles into the card edge | `.tabs > button[aria-controls]` with `.tab-panel` targets (kit JS wires click and arrow-key selection) |
 | Breadcrumbs | Small tags strung on one thread | `ul.crumbs` with `a`/`span`, current item carries `aria-current` |
 | Pagination | A row of small patches; the current page is pressed in | `ul.pages`, current carries `aria-current` |
 | Dropdown menu | A slip of paper slotted out from behind the trigger | `details.flap` with `.panel` (the panel is paper; do not add `.felt`) |

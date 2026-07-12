@@ -200,7 +200,9 @@
     Array.from(select.options).forEach(function(option, i){
       var paper = document.createElement('button');
       paper.className = 'paper-option'; paper.id = base + '-paper-option-' + i;
-      paper.setAttribute('role','option'); paper.textContent = option.textContent;
+      paper.setAttribute('role','option');
+      var paperLabel = document.createElement('span'); paperLabel.className = 'paper-option-label';
+      paperLabel.textContent = option.textContent; paper.appendChild(paperLabel);
       paper.dataset.value = option.value; paper.style.setProperty('--fold', String(i + 1));
       paper.style.setProperty('--fold-delay', ((i + 1) * 45) + 'ms');
       paper.style.setProperty('--fold-close-delay', ((select.options.length - i) * 45) + 'ms');
