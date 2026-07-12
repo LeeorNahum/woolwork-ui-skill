@@ -237,9 +237,9 @@ a.thread-link:visited{background-image:url("data:image/svg+xml;utf8,<svg xmlns='
 .seam::after{content:"";position:absolute;inset:0;background:var(--t,var(--cocoa));
   -webkit-mask:var(--seampat) repeat-x center/32px 14px;mask:var(--seampat) repeat-x center/32px 14px}
 /* A revealed seam is sewn on left to right: the crease presses in, then the
-   running stitch follows a beat behind, instead of the whole line settling as
-   one block. The seam holds still (no vertical settle) while it draws. */
-.ww-js .seam.sew{opacity:1;translate:none;rotate:none}
+   running stitch follows a beat behind, instead of the whole line fading in
+   as one block. The seam itself stays put and fully opaque while it draws. */
+.ww-js .seam.sew{opacity:1}
 .ww-js .seam.sew::before,.ww-js .seam.sew::after{clip-path:inset(0 100% 0 0);transition:clip-path .7s ease}
 .ww-js .seam.sew::after{transition:clip-path .85s ease .12s}
 .ww-js .seam.sew.on::before,.ww-js .seam.sew.on::after{clip-path:inset(0 0 0 0)}
@@ -272,7 +272,7 @@ a.thread-link:visited{background-image:url("data:image/svg+xml;utf8,<svg xmlns='
 .flap>summary{list-style:none;cursor:pointer;position:relative;z-index:2}
 .flap>summary::-webkit-details-marker{display:none}
 .flap .panel{position:absolute;left:2px;top:calc(100% - 8px);min-width:212px;z-index:1;padding:13px 11px 13px;
-  display:grid;gap:2px;rotate:-.6deg;color:var(--ink);
+  display:grid;gap:2px;color:var(--ink);
   background-color:var(--paper);
   background-image:linear-gradient(180deg,color-mix(in srgb,var(--paper) 88%,white),var(--paper) 22%,color-mix(in srgb,var(--paper) 94%,var(--cocoa)));
   border-radius:2px 3px 6px 7px;
@@ -283,19 +283,54 @@ a.thread-link:visited{background-image:url("data:image/svg+xml;utf8,<svg xmlns='
 .flap .panel button{display:block;width:100%;text-align:left;border:0;cursor:pointer;color:var(--ink);
   font:600 .95rem var(--font-body);padding:8px 12px;border-radius:6px;background:transparent}
 .flap .panel button:hover{background:color-mix(in srgb,var(--butter) 40%,transparent)}
-/* ---------- MODAL: a felt patch pinned over the board with safety pins ----------
-   The dialog itself is the patch: felt material, stitchable, pins allowed to
-   overhang via overflow:visible. No inner wrapper is needed. */
-dialog.pinned{border:0;padding:28px 26px 24px;color:var(--ink);
-  max-width:min(92vw,460px);overflow:visible;
-  background-color:var(--c,var(--cream));background-image:var(--streak),var(--grain);
-  background-blend-mode:soft-light,overlay;background-size:240px 240px,140px 140px;
-  border-radius:16px 19px 15px 20px/18px 15px 21px 16px;
-  box-shadow:inset 0 3px 0 var(--hi),inset 0 -5px 9px var(--lo),
-    0 3px 2px -1px rgba(30,20,12,.35),0 16px 26px -14px rgba(30,20,12,.4)}
-dialog.pinned::backdrop{background:rgba(40,28,18,.45);backdrop-filter:blur(1.5px)}
+/* ---------- MODAL: a sticky note pinned over the board ----------
+   Popups are paper, never felt: the same sheet material as the dropdown and
+   paper select, so the wool basket stays for surfaces that live on the board
+   permanently while anything transient reads as a note stuck up over it.
+   Closed by a pencil-drawn cross (.pencil-x), never a clip or a yarn-x. */
+dialog.pinned{border:0;padding:28px 30px 24px 26px;color:var(--ink);
+  box-sizing:border-box;max-width:min(92vw,460px);max-height:calc(100dvh - 24px);
+  overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--cocoa) 64%,transparent) transparent;
+  background-color:var(--paper);
+  background-image:repeating-linear-gradient(0deg,rgba(122,92,73,.035) 0 1px,transparent 1px 4px),
+    linear-gradient(178deg,color-mix(in srgb,var(--paper) 90%,white),var(--paper) 30%,color-mix(in srgb,var(--paper) 94%,var(--cocoa)));
+  border-radius:9px 12px 8px 13px/8px 9px 12px 10px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(122,92,73,.16),
+    0 3px 2px -1px rgba(30,20,12,.3),0 18px 26px -14px rgba(30,20,12,.42)}
+dialog.pinned::-webkit-scrollbar{width:8px}
+dialog.pinned::-webkit-scrollbar-track{background:transparent}
+dialog.pinned::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--cocoa) 64%,transparent);border-radius:8px}
+/* A stable dim of the real page, never a filtered clone: backdrop-filter's
+   live compositor sample of the page is unreliable once other 3D-transformed
+   layers exist on the page (the folder tabs, the paper-select folds) and at
+   non-100% browser zoom, where it can render mirrored, flipped, or tiled.
+   A flat scrim has no such failure mode at any zoom or scroll position. */
+dialog.pinned::backdrop{background:rgba(40,28,18,.52)}
+/* Fixed geometry, opacity plus a straight-line settle only: no rotation, so
+   the note's outline never reads as a different shape mid-arrival than the
+   axis-aligned rectangle it settles into. */
 dialog.pinned[open]{animation:pindrop .55s var(--spring)}
-@keyframes pindrop{from{transform:translateY(-26px) rotate(-2deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes pindrop{from{transform:translateY(-26px);opacity:0}to{transform:none;opacity:1}}
+/* Two classes so this beats .pencil-x's own position:relative on specificity
+   rather than depending on which rule happens to come later in the file. */
+dialog.pinned .pinned-close{position:absolute;top:14px;right:16px}
+/* No-JS fallback: showModal() is always script-invoked, so without JS a
+   dialog can never open and a floating, closeable overlay would be dead
+   weight. Render the identical markup in flow instead, as a static preview
+   of the note, and hide the controls that would otherwise do nothing. This
+   is the same DOM either way, never a duplicated second copy of the content. */
+html:not(.ww-js) dialog.pinned{display:block;position:static;margin:16px 0 0}
+html:not(.ww-js) .pinned-close{display:none}
+html:not(.ww-js) .pinned-trigger{display:none}
+/* Lock the board behind an open note, without shifting layout when the
+   scrollbar disappears: the gutter is reserved permanently (not only while
+   locked), so the viewport width the note's fixed siblings measure against
+   never changes. Falls back to ordinary background scrolling, unlocked, on
+   browsers without :has() support. */
+html{scrollbar-gutter:stable}
+body.board:has(dialog.pinned[open]){overflow:hidden}
+body.board.ww-scroll-lock{overflow:hidden}
 /* ---------- PINNED HARDWARE: paper clips and safety pins ----------
    Both are bent steel wire. The clip stays a thin, graphic silhouette so it
    reads as ordinary hardware at interface scale instead of a chrome ornament. */
@@ -343,6 +378,47 @@ dialog.pinned[open]{animation:pindrop .55s var(--spring)}
 .yarn-x:hover{rotate:90deg}
 .yarn-x:active{scale:.92}
 .yarn-x:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px;border-radius:8px}
+/* ---------- PENCIL CROSS: two pencils laid crossed on the paper ----------
+   Closes a paper popup (sticky note, entry form). A graphite tip, wood
+   shaft, and eraser cap read at interface scale as an actual pencil rather
+   than a plain line, so the paper's own close mark stays paper, never wool. */
+.pencil-x{width:34px;height:34px;border:0;cursor:pointer;background:transparent;position:relative;padding:0;flex:none;
+  transition:rotate .4s var(--spring)}
+.pencil-x .pencil{position:absolute;left:2px;right:2px;top:calc(50% - 3px);height:6px;border-radius:0 3px 3px 0;
+  clip-path:polygon(0% 50%,12% 4%,100% 4%,100% 96%,12% 96%);
+  background:linear-gradient(90deg,#2b2119 0 5%,#e8c27a 5% 15%,var(--cocoa) 15% 76%,#c9c9cf 76% 86%,#d8677a 86% 100%);
+  box-shadow:0 1px 1px rgba(30,20,12,.35)}
+.pencil-x .pencil:nth-child(1){rotate:45deg}
+.pencil-x .pencil:nth-child(2){rotate:-45deg}
+.pencil-x:hover{rotate:-14deg}
+.pencil-x:active{scale:.92}
+.pencil-x:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:2px;border-radius:8px}
+/* ---------- INK ACTION: a pen-boxed action written on the paper itself ----------
+   Paper popups carry no wool: no .btn-patch, no felt texture, no stitched
+   border. A hand-drawn ink rectangle around the label is the paper-native
+   action; .stamp fills solid, like a rubber stamp, for the one emphasized
+   action a note carries. Both dye from --cocoa/--ink like the rest of the
+   note, so night mode re-inks them with no per-element fix. */
+.btn-ink{position:relative;display:inline-block;cursor:pointer;
+  color:var(--ink);background:transparent;font:700 1rem/1 var(--font-display);
+  padding:10px 20px 11px;border:2px solid var(--cocoa);border-radius:7px 9px 6px 8px;
+  transition:background-color .2s ease,translate .3s var(--spring),color .2s ease}
+.btn-ink:hover{background-color:color-mix(in srgb,var(--cocoa) 12%,transparent)}
+.btn-ink:active{translate:0 1.5px;background-color:color-mix(in srgb,var(--cocoa) 20%,transparent)}
+.btn-ink:focus-visible{outline:3px dashed var(--thread-sky);outline-offset:3px}
+.btn-ink.stamp{background-color:var(--cocoa);color:var(--paper)}
+.btn-ink.stamp:hover{background-color:color-mix(in srgb,var(--cocoa) 88%,black)}
+.btn-ink.stamp:active{background-color:color-mix(in srgb,var(--cocoa) 78%,black)}
+/* ---------- INK LINE: a text field ruled directly onto the paper ----------
+   The paper counterpart to .pocket: no felt cut, no grain, just a written
+   line. Only for fields living inside a paper popup; fields on the board
+   stay .pocket. */
+.ink-line{width:100%;padding:8px 2px 9px;color:var(--ink);font:600 1rem var(--font-body);
+  border:0;border-bottom:2px solid var(--cocoa);border-radius:0;background:transparent;
+  transition:border-color .2s ease,box-shadow .2s ease}
+.ink-line::placeholder{color:color-mix(in srgb,var(--ink) 45%,transparent)}
+.ink-line:focus{outline:none;border-bottom-color:var(--thread-rose);
+  box-shadow:0 2px 0 -1px var(--thread-rose)}
 /* ---------- TOAST: notes tacked to the board corner, stacked in a tray ----------
    The kit appends toasts to one fixed .toast-tray so they stack in a column
    (newest lowest) with real gaps instead of piling on the same spot. Each
@@ -351,7 +427,7 @@ dialog.pinned[open]{animation:pindrop .55s var(--spring)}
   gap:10px;align-items:stretch;pointer-events:none;width:min(calc(100vw - 36px),340px)}
 .toast{position:relative;box-sizing:border-box;pointer-events:auto;padding:13px 48px 13px 18px;font-weight:700;width:100%;
   animation:tack .5s var(--spring);touch-action:pan-y;contain:layout}
-@keyframes tack{from{translate:0 24px;rotate:2deg;opacity:0}to{translate:0 0;rotate:0deg;opacity:1}}
+@keyframes tack{from{translate:0 24px;opacity:0}to{translate:0 0;opacity:1}}
 .toast.leaving{transition:opacity .3s,translate .35s var(--spring);opacity:0;translate:0 24px}
 .toast.swiping{transition:none;cursor:grab;user-select:none}
 .toast .yarn-x{position:absolute;top:calc(50% - 16px);right:8px;width:32px;height:32px}
@@ -391,7 +467,7 @@ select.pocket:focus{box-shadow:inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 0
 .select-slot select.pocket{position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none}
 .paper-choice{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;
   width:100%;box-sizing:border-box;min-height:48px;padding:13px 16px;border:0;cursor:pointer;text-align:left;color:var(--ink);
-  font:600 1rem var(--font-body);border-radius:10px 12px 14px 15px/10px 9px 15px 14px;rotate:-.12deg;
+  font:600 1rem var(--font-body);border-radius:10px 12px 14px 15px/10px 9px 15px 14px;
   background-color:var(--paper);background-image:repeating-linear-gradient(0deg,rgba(122,92,73,.035) 0 1px,transparent 1px 4px),
     linear-gradient(180deg,color-mix(in srgb,var(--paper) 90%,white),var(--paper));
   box-shadow:inset 0 1px 0 rgba(255,255,255,.82),inset 0 -1px 0 rgba(122,92,73,.17),
@@ -403,24 +479,28 @@ select.pocket:focus{box-shadow:inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 0
     0 2px 2px rgba(30,20,12,.18),0 0 0 3px color-mix(in srgb,var(--rose) 40%,transparent)}
 .paper-folds{position:absolute;left:0;right:0;top:calc(100% - 3px);z-index:62;perspective:700px;
   pointer-events:none;visibility:hidden;transform-style:preserve-3d;border-radius:0 0 14px 15px;overflow:hidden;isolation:isolate;
-  box-shadow:0 10px 14px -10px rgba(30,20,12,.45);transition:visibility 0s .65s}
+  box-shadow:0 10px 14px -10px rgba(30,20,12,.45);transition:visibility 0s var(--fold-hide-delay,.5s)}
 .paper-folds::before{content:"";position:absolute;inset:0;z-index:0;transform:scaleY(0);transform-origin:50% 0;
   border-radius:inherit;background-color:var(--paper);background-image:repeating-linear-gradient(0deg,
     rgba(122,92,73,.035) 0 1px,transparent 1px 4px);transition:transform .42s var(--spring) 180ms}
 .select-slot[data-open="true"] .paper-folds{pointer-events:auto;visibility:visible;transition-delay:0s}
 .select-slot[data-open="true"] .paper-folds::before{transform:scaleY(1);transition-delay:45ms}
 .paper-option{position:relative;z-index:1;display:block;width:100%;padding:10px 14px;border:0;cursor:pointer;text-align:left;
-  color:var(--ink);font:600 .95rem var(--font-body);background-color:var(--paper);
+  color:var(--ink);font:600 .95rem var(--font-body);background-color:var(--paper);opacity:0;
   background-image:linear-gradient(180deg,rgba(255,255,255,.5),transparent 42%,rgba(122,92,73,.08)),
     repeating-linear-gradient(0deg,rgba(122,92,73,.035) 0 1px,transparent 1px 4px);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.74),inset 0 -1px 0 rgba(122,92,73,.25),0 2px 3px rgba(30,20,12,.2);
   transform-origin:50% 0;transform:translateY(calc(var(--fold) * -9px)) rotateX(var(--fold-angle));
-  transition:transform .42s var(--spring) var(--fold-close-delay)}
+  /* Opacity is gated to the same delay as the fold: a folded option stays
+     fully invisible (never a visible foreshortened sliver) until its own
+     turn to move, and fades out again well before its fold finishes closing,
+     so nothing lingers on screen after the motion has visually settled. */
+  transition:transform .42s var(--spring) var(--fold-close-delay),opacity .22s ease var(--fold-close-delay)}
 .paper-option:nth-child(odd){background-image:linear-gradient(174deg,rgba(255,255,255,.66) 0 47%,rgba(122,92,73,.12) 52% 100%),
   repeating-linear-gradient(0deg,rgba(122,92,73,.035) 0 1px,transparent 1px 4px)}
 .paper-option:nth-child(even){background-image:linear-gradient(186deg,rgba(122,92,73,.11) 0 48%,rgba(255,255,255,.62) 53% 100%),
   repeating-linear-gradient(0deg,rgba(122,92,73,.035) 0 1px,transparent 1px 4px)}
-.select-slot[data-open="true"] .paper-option{transform:translateY(0) rotateX(0);transition-delay:var(--fold-delay)}
+.select-slot[data-open="true"] .paper-option{transform:translateY(0) rotateX(0);opacity:1;transition-delay:var(--fold-delay)}
 .paper-option-label{display:block;opacity:0;transition:opacity .1s ease var(--fold-close-delay)}
 .select-slot[data-open="true"] .paper-option-label{opacity:1;transition-delay:calc(var(--fold-delay) + 150ms)}
 .paper-option[aria-selected="true"]{font-weight:800}
@@ -436,13 +516,18 @@ textarea.pocket{min-height:96px;resize:vertical;font:inherit}
   position:relative;z-index:1;isolation:isolate;flex:0 0 auto;padding:11px clamp(10px,2vw,22px) 10px;translate:none;
   background:transparent;
   transition:background-color .25s,box-shadow .25s,translate .35s var(--spring)}
-.tabs>button::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:10px 12px 2px 3px;
-  transform:perspective(140px) rotateX(16deg);transform-origin:50% 100%;
+/* Flat geometry, not a faked 3D lean: a rotateX'd background/texture forces
+   the browser to resample the grain raster through a perspective matrix,
+   which shows up as visible jagged, pixelated edges on the slanted side at
+   any zoom other than 100%. A crisp vector radius reads as a hand-cut folder
+   tab just as well, tucks behind the panel via z-index and translate the
+   same as before, and stays anti-aliased at every zoom level. */
+.tabs>button::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:9px 11px 0 0;
   background-color:color-mix(in srgb,var(--cream) 88%,var(--board));background-image:var(--grain);
   background-size:140px 140px;background-blend-mode:overlay;
   box-shadow:inset 0 2px 0 rgba(255,252,242,.35),inset 0 -4px 5px rgba(30,18,10,.2)}
 .tabs>button::after{content:"";position:absolute;inset:5px 7px 3px;border:2px dashed var(--t,var(--thread-cream));
-  border-radius:6px 7px 1px 2px;transform:perspective(140px) rotateX(16deg);transform-origin:50% 100%;opacity:.52}
+  border-radius:6px 7px 0 0;opacity:.52}
 .tabs>button[aria-selected="true"]{z-index:2;translate:0 3px}
 .tabs>button[aria-selected="true"]::before{background-color:var(--c,var(--cream));
   box-shadow:inset 0 2px 0 var(--hi),inset 0 -3px 5px var(--lo)}
@@ -569,7 +654,7 @@ ul.knots li{position:relative;padding-left:22px;margin:7px 0}
 ul.knots li::before{content:"";position:absolute;left:2px;top:.52em;width:10px;height:10px;border-radius:50%;
   background:radial-gradient(circle at 38% 32%,color-mix(in srgb,var(--t,var(--cocoa)) 55%,white),var(--t,var(--cocoa)));
   box-shadow:inset 0 -1px 1px rgba(0,0,0,.3),0 1px 1px rgba(30,20,12,.25)}
-figure.photo{margin:0;display:inline-block;padding:10px 10px 8px;rotate:-.7deg;
+figure.photo{margin:0;display:inline-block;padding:10px 10px 8px;
   background-color:var(--cream);background-image:var(--grain);background-size:140px 140px;background-blend-mode:overlay;
   border-radius:12px 15px 11px 16px/14px 11px 16px 12px;
   box-shadow:inset 0 2px 0 var(--hi),inset 0 -3px 5px var(--lo),0 3px 2px -1px rgba(30,20,12,.32),0 12px 18px -12px rgba(30,20,12,.4)}
@@ -619,24 +704,31 @@ body.board::-webkit-scrollbar-thumb{background:var(--cocoa);border-radius:8px;bo
    for selection, copying, scroll height, and no-JS rendering. */
 /* Hidden-then-revealed ONLY once JS has confirmed it is running (html.ww-js),
    so server-rendered pages without JS stay fully visible. */
-.ww-js .sew{opacity:0;translate:0 12px;rotate:.35deg;
-  transition:opacity .45s ease var(--sew-delay,0s),translate .65s var(--spring) var(--sew-delay,0s),rotate .65s var(--spring) var(--sew-delay,0s)}
-/* The settled state is translate/rotate NONE, not zero: a zero value still
-   creates a stacking context, which would trap dropdown panels and tooltips
-   under later sibling patches forever. None releases it after the settle. */
-.ww-js .sew.on{opacity:1;translate:none;rotate:none}
+/* Fixed geometry, literally: the reveal is opacity only. No translate, no
+   rotate, no transform of any kind, so a revealing element occupies exactly
+   its settled position, outline, and size at every visible frame; nothing
+   on the page ever appears anywhere other than where it will rest. The
+   physical "sewn on" motion comes from the thread draw that follows (the
+   lead traveling the final path), not from the patch moving. A side benefit:
+   with no transform there is never a transient stacking context to trap
+   dropdown panels or tooltips under later sibling patches. */
+.ww-js .sew{opacity:0;transition:opacity .6s ease var(--sew-delay,0s)}
+.ww-js .sew.on{opacity:1}
 /* When JS runs, the running stitch is a real drawn thread that traces the
    element's exact box (equal inset on every side, following its own corner
    radii) and stays as the resting border, so what draws on IS what remains.
-   The CSS dashed border is the no-JS fallback and steps aside once threaded. */
-.ww-js .stitch.threaded::after{display:none}
+   The CSS dashed border is the no-JS fallback; it is hidden the instant JS
+   is confirmed running (not only once a given element is .threaded), so it
+   can never flash into view for even one frame before the persistent SVG
+   thread exists on a not-yet-revealed element. */
+.ww-js .stitch::after{display:none}
 .stitch-thread{position:absolute;top:8px;left:8px;pointer-events:none;overflow:visible;
   filter:drop-shadow(0 1px 0 rgba(255,252,242,.35))}
 .stitch-thread path{fill:none;stroke:var(--t,var(--cocoa));stroke-width:2.5;stroke-linecap:butt;opacity:.85}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition-duration:.01s!important}
   .paper-option,.paper-option-label,.paper-folds::before{transition-delay:0s!important}
-  .ww-js .sew{opacity:1;translate:none;rotate:none}
+  .ww-js .sew{opacity:1}
   .spinner::before{animation:none}
   .basting{animation:none;opacity:.7}
 }

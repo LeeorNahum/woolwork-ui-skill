@@ -14,7 +14,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | Sidebar, drawer | A larger felt panel pinned along one edge | Compose: `.felt.deep` fixed to an edge; open/close is a translate transition; fasten corners with `.clip` or `.safety-pin` |
 | Footer | A folded hem: a slightly darker felt band | `.felt` dyed toward the board color, no stitch |
 | Image, media | A photo mounted on a stitched felt frame | `figure.photo` with `img` and optional `figcaption` |
-| Skeleton / loading placeholder | Basting: pale fabric held by loose temporary stitches | `.basting` (gently pulses; static under reduced motion) |
+| Skeleton / loading placeholder | Basting: pale fabric held by loose temporary stitches | `.basting` (gently pulses; static under reduced motion). Shape each placeholder to the real content it stands in for (a circle for an avatar, a short bar for a title, a longer one for a subtitle) so the loading state reads as a specific, recognizable composition, not an arbitrary scrap |
 | Empty state | A bare patch with a single tag explaining what will live there | Compose: `.felt` + `.tag` + muted `--ink-soft` text |
 | Decorative accent | A pompom of tied-off yarn | `.pompom` (dye with `--c`, resize with width/height; decoration only, never a control) |
 | Star rating | Die-cut sticker stars stuck to the board | `.stars` wrapping `.star` (dye with `--c`; `.star.empty` for an unfilled slot) |
@@ -27,7 +27,9 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | Icon button | A round four-hole sewn button | `.sewn-button` |
 | Button group / segmented control | Patches sharing one stitch line | Compose: `.btn-patch` row with reduced gap; the active one uses the pressed-in shadow of `.pages [aria-current]` |
 | Link | A strand of thread couched under the text | `a.thread-link` (visited links show a straight backstitch) |
-| Close / dismiss | Two yarn strands tied into an X, the exact look the hamburger settles into | `button.yarn-x` with two `.yarn` children (dye the strands with `--c`) |
+| Close / dismiss (wool surfaces) | Two yarn strands tied into an X, the exact look the hamburger settles into | `button.yarn-x` with two `.yarn` children (dye the strands with `--c`) |
+| Close / dismiss (paper popups) | Two pencils laid crossed on the sheet | `button.pencil-x` with two `.pencil` children |
+| Action inside a paper popup | A hand-drawn ink box around the label, never a felt patch | `button.btn-ink` (outline); `.stamp` fills it solid like a rubber stamp, for the one emphasized action a note carries |
 | Floating action button | A larger sewn button pinned above the board | `.sewn-button` sized up, `position:fixed` |
 
 ## Forms
@@ -35,6 +37,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | UI element | Craft object | How |
 |---|---|---|
 | Text input | A pocket: a slit cut into the felt, contents tucked inside | `input.pocket` |
+| Text input, inside a paper popup | A line ruled directly onto the paper, not a felt cut | `input.ink-line` (use in place of `.pocket` only inside `dialog.pinned`) |
 | Textarea | A deeper pocket | `textarea.pocket` |
 | Select | A single properly sized paper choice sheet, sized and aligned like the pocket inputs beside it; its choices unfold directly from its own bottom edge as opaque concertina paper | `select.pocket` (kit JS keeps the real select for form submission and builds the paper control) |
 | Checkbox | A four-hole button cross-stitched when checked, one thread stroke per press phase | `input.sew-check` |
@@ -54,7 +57,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | UI element | Craft object | How |
 |---|---|---|
 | Navbar | A felt band across the top of the board | Compose: `.felt` full-width bar, brand text, `a.thread-link` items |
-| Tabs | Hand-cut fabric labels tucked behind the content card; the selected tab fills with its dye and settles into the card edge | `.tabs > button[aria-controls]` with `.tab-panel` targets (kit JS wires click and arrow-key selection) |
+| Tabs | Hand-cut fabric labels tucked behind the content card; the selected tab fills with its dye and settles into the card edge | `.tabs > button[aria-controls]` with `.tab-panel` targets (kit JS wires click and arrow-key selection). The face is flat vector geometry (a crisp corner radius), never a 3D `rotateX` lean: rasterizing a textured background through a perspective transform shows visible jagged edges on the slanted side at any zoom other than 100% |
 | Breadcrumbs | Small tags strung on one thread | `ul.crumbs` with `a`/`span`, current item carries `aria-current` |
 | Pagination | A row of small patches; the current page is pressed in | `ul.pages`, current carries `aria-current` |
 | Dropdown menu | A slip of paper slotted out from behind the trigger | `details.flap` with `.panel` (the panel is paper; do not add `.felt`) |
@@ -66,9 +69,9 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 
 | UI element | Craft object | How |
 |---|---|---|
-| Modal | A note clipped or pinned over the board | `dialog.pinned` (native `showModal()`); pressing the board around the note closes it (kit JS) |
-| Pinned hardware | A thin bent-steel paper clip slipped over the patch edge, or a closed safety pin | `.clip` / `.safety-pin`, placed with `.tl`/`.tc`/`.tr` or positioned by hand; decoration only |
-| Drawer / sheet | A felt panel sliding in from an edge | Compose: `dialog.pinned` positioned to an edge, translate transition |
+| Modal | A paper sticky note pinned over the board, closed with a pencil-drawn cross | `dialog.pinned` (native `showModal()`) with a `.pencil-x` close button in the top corner, `.btn-ink` for actions, and `.ink-line` for text inputs; a select keeps `select.pocket`, whose visible face is the kit's paper sheet in both JS and no-JS states, so it carries no felt. Pressing the board around the note closes it too (kit JS). Paper, never felt: no `.clip`/`.safety-pin`/`.btn-patch`/`.yarn-x` and no `input.pocket`/`textarea.pocket` inside a popup. The board behind an open note is scroll-locked (kit CSS `:has()`, reinforced by kit JS for browsers without it) without shifting layout, since `scrollbar-gutter:stable` reserves the scrollbar's width permanently. Mark the button that calls `showModal()` with `.pinned-trigger` so the kit can hide it (and the note's own `.pencil-x`) when JavaScript is absent, since a dialog can only ever be opened by script; the dialog's own markup then renders in flow as a static preview instead |
+| Pinned hardware | A thin bent-steel paper clip slipped over a felt patch edge, or a closed safety pin | `.clip` / `.safety-pin`, placed with `.tl`/`.tc`/`.tr` or positioned by hand; decoration only, for felt surfaces that live on the board permanently, not for paper popups |
+| Drawer / sheet | A felt panel sliding in from an edge | Compose: a `.felt.deep` panel positioned to an edge, translate transition |
 | Tooltip | A paper tag tied on with thread | `[data-tip]` attribute |
 | Popover | A small flap panel | `details.flap` or a positioned `.felt.stitch` |
 | Toast / snackbar | Notes tacked to a corner tray, stacked in a column, each dismissable by a yarn-cross or a sideways swipe | `woolwork.toast(message)` (the kit builds and manages the `.toast-tray`) |

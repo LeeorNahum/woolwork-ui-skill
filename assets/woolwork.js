@@ -105,7 +105,7 @@
   function drawThread(el){
     var rec = el._wwThread; if(!rec || rec.drawn) return;
     var lead = rec.lead;
-    lead.style.transition = 'stroke-dashoffset 1.05s ease-in-out .12s';
+    lead.style.transition = 'stroke-dashoffset 1.6s ease-in-out .15s';
     requestAnimationFrame(function(){ requestAnimationFrame(function(){
       lead.style.strokeDashoffset = '0';
     });});
@@ -113,7 +113,7 @@
     setTimeout(function(){
       if(rec.defs){ rec.defs.remove(); rec.defs = null; }
       rec.path.removeAttribute('mask'); rec.lead = null;
-    }, 1300);
+    }, 1850);
   }
 
   var io;
@@ -122,19 +122,27 @@
     el.classList.remove('on');
     io.observe(el);
   }
+  /* The observation root extends far above the viewport: an element is
+     revealed when it approaches from below OR is already anywhere above the
+     viewport. Anchor navigation, an End-key jump, or a scrollbar drag can
+     move past content without it ever crossing the viewport, and without
+     this it would stay invisible until the user happened to scroll back
+     over it. With the extended root, everything jumped past reveals
+     immediately, while content still below the viewport keeps the normal
+     arrival choreography. */
   io = new IntersectionObserver(function(entries){
     entries.forEach(function(en){
       if(!en.isIntersecting) return;
       var el = en.target;
       io.unobserve(el);
       /* Force the browser to paint the hidden state before flipping to
-         visible, so the settle transition has a start frame to animate from. */
+         visible, so the reveal transition has a start frame to animate from. */
       requestAnimationFrame(function(){ requestAnimationFrame(function(){
         el.classList.add('on');
         if(el.classList.contains('stitch')) drawThread(el);
       }); });
     });
-  }, {threshold:.12});
+  }, {threshold:.12, rootMargin:'1000000px 0px 0px 0px'});
   /* Thread every stitched element up front: .sew ones arm undrawn and draw on
      reveal; stitched-but-not-sewn ones (toasts, static cards) draw at once. */
   document.querySelectorAll('.stitch:not(.sew)').forEach(ensureThread);
@@ -156,9 +164,11 @@
           if(n.nodeType !== 1) continue;
           if(n.classList.contains('sew')) armReveal(n);
           else if(n.classList.contains('stitch')) ensureThread(n);
+          if(n.matches && n.matches('dialog.pinned')) watchPinnedDialog(n);
           if(n.querySelectorAll){
             n.querySelectorAll('.sew').forEach(armReveal);
             n.querySelectorAll('.stitch:not(.sew)').forEach(ensureThread);
+            n.querySelectorAll('dialog.pinned').forEach(watchPinnedDialog);
           }
         }
       });
@@ -212,6 +222,14 @@
     });
     slot.insertBefore(trigger, select); slot.appendChild(folds);
     select.tabIndex = -1; select.setAttribute('aria-hidden','true');
+
+    /* The panel must stay visible exactly as long as the slowest fold is
+       still moving, no longer: the last option to close carries the
+       longest --fold-close-delay, plus the opacity fade duration, plus a
+       small buffer. A fixed constant either flashes the panel away mid-fold
+       (fewer options) or leaves an invisible-but-present box lingering
+       (more options); this scales with the real option count instead. */
+    slot.style.setProperty('--fold-hide-delay', (select.options.length * 45 + 260) + 'ms');
 
     var label = select.id ? document.querySelector('label[for="' + CSS.escape(select.id) + '"]') : select.closest('label');
     if(label){
@@ -347,6 +365,34 @@
     var r = d.getBoundingClientRect();
     if(e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) d.close();
   });
+
+  /* ---- Pinned notes: lock the board behind an open note ----
+     A CSS :has() rule (body:has(dialog.pinned[open])) already does this
+     declaratively; this watcher is a reinforcement for browsers without
+     :has() support, keyed off the same [open] attribute regardless of how a
+     project calls showModal()/close(). overflow:hidden alone (no
+     position:fixed scroll-jacking) preserves the exact prior scroll offset,
+     since hiding overflow does not reset scrollTop; the permanent
+     scrollbar-gutter:stable in the kit CSS keeps the viewport width (and so
+     every fixed-positioned sibling's offset) constant whether or not the
+     lock is active. */
+  var wwLockCount = 0;
+  function wwApplyScrollLock(){
+    if(wwLockCount > 0) document.body.classList.add('ww-scroll-lock');
+    else document.body.classList.remove('ww-scroll-lock');
+  }
+  function watchPinnedDialog(d){
+    if(d._wwLockWatched) return; d._wwLockWatched = true;
+    if(d.open){ wwLockCount++; wwApplyScrollLock(); }
+    new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        if(m.attributeName !== 'open') return;
+        wwLockCount = Math.max(0, wwLockCount + (d.open ? 1 : -1));
+        wwApplyScrollLock();
+      });
+    }).observe(d, {attributes:true, attributeFilter:['open']});
+  }
+  document.querySelectorAll('dialog.pinned').forEach(watchPinnedDialog);
 
   /* ---- Toast: notes tacked to a corner tray, dismissable by X or swipe ----
      All toasts share one fixed .toast-tray so they stack in a column instead
