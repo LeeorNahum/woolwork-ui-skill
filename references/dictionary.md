@@ -36,7 +36,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 |---|---|---|
 | Text input | A pocket: a slit cut into the felt, contents tucked inside | `input.pocket` |
 | Textarea | A deeper pocket | `textarea.pocket` |
-| Select | A paper choice slip resting inside one recessed felt pocket; its choices unfold as opaque concertina paper | `select.pocket` (kit JS keeps the real select for form submission and builds the paper control) |
+| Select | A single properly sized paper choice sheet, sized and aligned like the pocket inputs beside it; its choices unfold directly from its own bottom edge as opaque concertina paper | `select.pocket` (kit JS keeps the real select for form submission and builds the paper control) |
 | Checkbox | A four-hole button cross-stitched when checked, one thread stroke per press phase | `input.sew-check` |
 | Radio | A snap fastener; checking snaps the stud in, only one per group | `input.snap-radio` |
 | Switch / toggle | A buttonhole; the knob is a small sewn button sliding through it | `button.buttonhole[aria-pressed]` with `.knob` |
