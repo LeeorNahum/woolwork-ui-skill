@@ -12,7 +12,7 @@
      what remains (the CSS dashed border is only the no-JS fallback). On reveal
      the thread sews on in place from the top-left corner; a ResizeObserver
      keeps the path fitted to the box. Visual only. */
-  var NS = 'http://www.w3.org/2000/svg', stitchSeq = 0;
+  var NS = 'http://www.w3.org/2000/svg';
   var ro = 'ResizeObserver' in window ? new ResizeObserver(function(entries){
     entries.forEach(function(en){ resizeThread(en.target); });
   }) : null;
@@ -45,6 +45,44 @@
     return {d:d, w:w, h:h};
   }
 
+  function dashPath(guide, start, end){
+    var steps = Math.max(1, Math.ceil((end - start) / 1.25));
+    var first = guide.getPointAtLength(start);
+    var d = 'M' + first.x + ' ' + first.y;
+    for(var i = 1; i <= steps; i++){
+      var point = guide.getPointAtLength(start + (end - start) * i / steps);
+      d += 'L' + point.x + ' ' + point.y;
+    }
+    return d;
+  }
+
+  /* Build the resting stitch as its actual individual dashes. These same
+     nodes appear one by one during sewing and remain afterward, so animation
+     and rest can never differ through mask compositing or a path swap. */
+  function buildDashes(rec, g){
+    rec.svg.setAttribute('width', g.w); rec.svg.setAttribute('height', g.h);
+    rec.svg.setAttribute('viewBox', '0 0 ' + g.w + ' ' + g.h);
+    rec.guide.setAttribute('d', g.d);
+    var total = rec.guide.getTotalLength();
+    var count = Math.max(1, Math.ceil(total / 11.1));
+    while(rec.dashes.length < count){
+      var added = document.createElementNS(NS,'path');
+      added.setAttribute('class','stitch-dash');
+      if(rec.phase === 'armed' || rec.phase === 'drawing') added.style.opacity = '0';
+      rec.group.appendChild(added); rec.dashes.push(added);
+    }
+    while(rec.dashes.length > count) rec.dashes.pop().remove();
+    rec.dashes.forEach(function(dash, i){
+      var start = i * 11.1;
+      dash.setAttribute('d', dashPath(rec.guide, start, Math.min(start + 6.5, total)));
+    });
+  }
+
+  function settleThread(rec){
+    clearTimeout(rec.timer); rec.phase = 'settled';
+    rec.dashes.forEach(function(dash){ dash.style.transition = 'none'; dash.style.opacity = '.85'; });
+  }
+
   /* Attach a persistent thread SVG to a .stitch element (idempotent). */
   function ensureThread(el){
     if(el._wwThread) return el._wwThread;
@@ -53,12 +91,14 @@
     svg.setAttribute('class','stitch-thread');
     svg.setAttribute('width', g.w); svg.setAttribute('height', g.h);
     svg.setAttribute('viewBox', '0 0 ' + g.w + ' ' + g.h);
-    var path = document.createElementNS(NS,'path');
-    path.setAttribute('d', g.d);
-    path.style.strokeDasharray = '6.5 4.6';
-    svg.appendChild(path); el.appendChild(svg);
+    var guide = document.createElementNS(NS,'path'); guide.setAttribute('class','stitch-guide');
+    var group = document.createElementNS(NS,'g'); group.setAttribute('class','stitch-dashes');
+    svg.appendChild(guide); svg.appendChild(group);
+    var rec = {svg:svg, guide:guide, group:group, dashes:[], phase:'settled', timer:0};
+    buildDashes(rec, g);
+    el.appendChild(svg);
     el.classList.add('threaded');
-    el._wwThread = {svg:svg, path:path, defs:null, lead:null, drawn:true};
+    el._wwThread = rec;
     if(ro) ro.observe(el);
     return el._wwThread;
   }
@@ -66,62 +106,42 @@
   function resizeThread(el){
     var rec = el._wwThread; if(!rec) return;
     var g = stitchGeom(el);
-    rec.svg.setAttribute('width', g.w); rec.svg.setAttribute('height', g.h);
-    rec.svg.setAttribute('viewBox', '0 0 ' + g.w + ' ' + g.h);
-    rec.path.setAttribute('d', g.d);
-    if(rec.lead) rec.lead.setAttribute('d', g.d);
+    var phase = rec.phase;
+    buildDashes(rec, g);
+    if(phase === 'armed'){
+      rec.dashes.forEach(function(dash){ dash.style.opacity = '0'; });
+    }else if(phase === 'settled'){
+      settleThread(rec);
+    }
   }
 
-  /* Undrawn state for a .sew element awaiting reveal: hide the dashed path
-     behind a mask whose solid lead thread has not been drawn yet. */
+  /* Undrawn state for a .sew element awaiting reveal. */
   function armThread(el){
     var rec = ensureThread(el);
-    if(rm){ rec.drawn = true; return; }
-    if(rec.defs){ rec.defs.remove(); rec.defs = null; }
-    var g = stitchGeom(el);
-    var id = 'ww-stitch-' + (++stitchSeq);
-    var defs = document.createElementNS(NS,'defs');
-    var mask = document.createElementNS(NS,'mask');
-    mask.setAttribute('id', id);
-    mask.setAttribute('maskUnits','userSpaceOnUse');
-    mask.setAttribute('x','-3'); mask.setAttribute('y','-3');
-    mask.setAttribute('width', g.w + 6); mask.setAttribute('height', g.h + 6);
-    var lead = document.createElementNS(NS,'path');
-    lead.setAttribute('d', g.d);
-    lead.setAttribute('fill','none');
-    lead.setAttribute('stroke','#fff');
-    lead.setAttribute('stroke-width','5.5');
-    lead.setAttribute('pathLength','100');
-    lead.style.strokeDasharray = '100';
-    lead.style.strokeDashoffset = '100';
-    mask.appendChild(lead); defs.appendChild(mask);
-    rec.svg.insertBefore(defs, rec.svg.firstChild);
-    rec.path.setAttribute('mask','url(#' + id + ')');
-    rec.defs = defs; rec.lead = lead; rec.drawn = false;
+    if(rm){ settleThread(rec); return; }
+    clearTimeout(rec.timer); rec.phase = 'armed';
+    rec.dashes.forEach(function(dash){ dash.style.transition = 'none'; dash.style.opacity = '0'; });
   }
 
-  /* Sew the thread on in place, then drop the mask so it rests as a plain
-     dashed thread (the solid lead reveals the dashes where they will stay). */
+  /* Sew the exact resting dashes on in order. A one-step opacity change means
+     every visible dash arrives at its final color and weight immediately. */
   function drawThread(el){
-    var rec = el._wwThread; if(!rec || rec.drawn) return;
-    var lead = rec.lead;
-    /* The patch fade reaches full opacity before the thread starts. Drawing
-       through the parent's fade would make the exact same thread look pale
-       at the start and darker after settling. */
-    lead.style.transition = 'stroke-dashoffset 1.6s ease-in-out .65s';
-    requestAnimationFrame(function(){ requestAnimationFrame(function(){
-      lead.style.strokeDashoffset = '0';
-    });});
-    rec.drawn = true;
-    setTimeout(function(){
-      if(rec.defs){ rec.defs.remove(); rec.defs = null; }
-      rec.path.removeAttribute('mask'); rec.lead = null;
-    }, 2350);
+    var rec = el._wwThread; if(!rec || rec.phase !== 'armed') return;
+    rec.phase = 'drawing';
+    var step = rec.dashes.length > 1 ? 1600 / (rec.dashes.length - 1) : 0;
+    rec.dashes.forEach(function(dash, i){
+      dash.style.transition = 'opacity 1ms step-end ' + (650 + i * step) + 'ms';
+      dash.style.opacity = '.85';
+    });
+    rec.timer = setTimeout(function(){ settleThread(rec); }, 2350);
   }
 
   var io;
   function armReveal(el){
-    if(el.classList.contains('stitch')) armThread(el);
+    if(rm){
+      if(el.classList.contains('stitch')) armThread(el);
+      el.classList.add('on'); return;
+    }
     el.classList.remove('on');
     io.observe(el);
   }
@@ -138,6 +158,9 @@
       if(!en.isIntersecting) return;
       var el = en.target;
       io.unobserve(el);
+      /* Build the persistent dash nodes only when this card joins the viewing
+         path. Hidden cards below the viewport carry no unused SVG subtree. */
+      if(el.classList.contains('stitch')) armThread(el);
       /* Force the browser to paint the hidden state before flipping to
          visible, so the reveal transition has a start frame to animate from. */
       requestAnimationFrame(function(){ requestAnimationFrame(function(){
@@ -146,8 +169,8 @@
       }); });
     });
   }, {threshold:.12, rootMargin:'1000000px 0px 0px 0px'});
-  /* Thread every stitched element up front: .sew ones arm undrawn and draw on
-     reveal; stitched-but-not-sewn ones (toasts, static cards) draw at once. */
+  /* Static stitches draw at once. Sewn cards build their persistent thread
+     when the observer reaches them, before their two-frame reveal starts. */
   document.querySelectorAll('.stitch:not(.sew)').forEach(ensureThread);
   document.querySelectorAll('.sew').forEach(armReveal);
   /* Back-forward cache restores the page without re-running this script, so a
@@ -167,11 +190,17 @@
           if(n.nodeType !== 1) continue;
           if(n.classList.contains('sew')) armReveal(n);
           else if(n.classList.contains('stitch')) ensureThread(n);
+          if(n.matches && n.matches('select.pocket')) enhancePaperSelect(n);
           if(n.matches && n.matches('dialog.pinned')) watchPinnedDialog(n);
+          if(n.matches && n.matches('a[href]')) syncNightLink(n, document.documentElement.getAttribute('data-theme') === 'night');
+          if(n.matches && n.matches('[data-woolwork-theme-toggle]')) syncNightControl(n, document.documentElement.getAttribute('data-theme') === 'night');
           if(n.querySelectorAll){
             n.querySelectorAll('.sew').forEach(armReveal);
             n.querySelectorAll('.stitch:not(.sew)').forEach(ensureThread);
+            n.querySelectorAll('select.pocket').forEach(enhancePaperSelect);
             n.querySelectorAll('dialog.pinned').forEach(watchPinnedDialog);
+            n.querySelectorAll('a[href]').forEach(function(link){ syncNightLink(link, document.documentElement.getAttribute('data-theme') === 'night'); });
+            n.querySelectorAll('[data-woolwork-theme-toggle]').forEach(function(control){ syncNightControl(control, document.documentElement.getAttribute('data-theme') === 'night'); });
           }
         }
       });
@@ -190,7 +219,8 @@
   /* ---- Paper selects: the native select remains the form value and no-JS
      fallback; the visible control is a sheet tucked into a felt slot whose
      choices unfold as alternating concertina folds. ---- */
-  function enhancePaperSelect(select, index){
+  var paperSelectSeq = 0;
+  function enhancePaperSelect(select){
     if(select.dataset.wwPaperSelect) return;
     select.dataset.wwPaperSelect = 'true';
 
@@ -198,7 +228,7 @@
     slot.className = 'select-slot'; slot.dataset.open = 'false';
     select.parentNode.insertBefore(slot, select); slot.appendChild(select);
 
-    var base = select.id || ('ww-paper-select-' + index);
+    var base = select.id || ('ww-paper-select-' + (++paperSelectSeq));
     var listId = base + '-paper-options';
     var trigger = document.createElement('button');
     trigger.type = 'button'; trigger.className = 'paper-choice';
@@ -217,20 +247,14 @@
       var paperLabel = document.createElement('span'); paperLabel.className = 'paper-option-label';
       paperLabel.textContent = option.textContent; paper.appendChild(paperLabel);
       paper.dataset.value = option.value; paper.style.setProperty('--fold', String(i + 1));
-      paper.style.setProperty('--fold-delay', (i * 55) + 'ms');
-      paper.style.setProperty('--fold-close-delay', ((select.options.length - 1 - i) * 55) + 'ms');
+      paper.style.setProperty('--fold-delay', ((i + 1) * 45) + 'ms');
       paper.style.setProperty('--fold-angle', i % 2 ? '-82deg' : '82deg');
+      paper.disabled = option.disabled; paper.setAttribute('aria-disabled', option.disabled ? 'true' : 'false');
       paper.type = 'button';
       folds.appendChild(paper); paperOptions.push(paper);
     });
     slot.insertBefore(trigger, select); slot.appendChild(folds);
     select.tabIndex = -1; select.setAttribute('aria-hidden','true');
-
-    /* Keep both visibility and stacking height until the slowest reverse
-       fold has completed its 420ms transform. The previous opacity-based
-       duration hid the panel while that transform was still running. */
-    var foldCloseMs = Math.max(0, select.options.length - 1) * 55 + 450;
-    slot.style.setProperty('--fold-hide-delay', foldCloseMs + 'ms');
 
     var label = select.id ? document.querySelector('label[for="' + CSS.escape(select.id) + '"]') : select.closest('label');
     if(label){
@@ -250,22 +274,32 @@
       trigger.setAttribute('aria-activedescendant', paperOptions[active] ? paperOptions[active].id : '');
       trigger.disabled = select.disabled;
     }
-    function setActive(i){
-      active = Math.max(0, Math.min(paperOptions.length - 1, i));
+    function setActive(i, direction){
+      i = Math.max(0, Math.min(paperOptions.length - 1, i));
+      direction = direction || 1;
+      while(paperOptions[i] && paperOptions[i].disabled){
+        i += direction;
+        if(i < 0 || i >= paperOptions.length) return;
+      }
+      active = i;
       paperOptions.forEach(function(paper, n){ paper.dataset.active = n === active ? 'true' : 'false'; });
       if(paperOptions[active]) trigger.setAttribute('aria-activedescendant', paperOptions[active].id);
     }
-    var closeTimer = 0;
     function setOpen(open){
       if(trigger.disabled) open = false;
-      clearTimeout(closeTimer);
-      if(open){
-        delete slot.dataset.closing;
-      }else if(slot.dataset.open === 'true'){
-        slot.dataset.closing = 'true';
-        closeTimer = setTimeout(function(){ delete slot.dataset.closing; }, foldCloseMs);
+      if(!open && slot.dataset.open !== 'true'){
+        trigger.setAttribute('aria-expanded','false');
+        return;
       }
-      slot.dataset.open = open ? 'true' : 'false';
+      if(open){
+        slot.dataset.open = 'true';
+      }else{
+        /* Edge-on paper reads as transparent bars, not a physical reverse
+           fold. Hide the panel immediately and reset its folds offscreen. */
+        slot.dataset.reset = 'true'; slot.dataset.open = 'false';
+        void folds.offsetWidth;
+        delete slot.dataset.reset;
+      }
       trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
       if(open) setActive(Math.max(0, select.selectedIndex));
     }
@@ -282,10 +316,10 @@
       if(e.key === 'Tab'){ setOpen(false); return; }
       if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
         e.preventDefault(); if(!open){ setOpen(true); return; }
-        setActive(active + (e.key === 'ArrowDown' ? 1 : -1)); return;
+        setActive(active + (e.key === 'ArrowDown' ? 1 : -1), e.key === 'ArrowDown' ? 1 : -1); return;
       }
-      if(e.key === 'Home' && open){ e.preventDefault(); setActive(0); return; }
-      if(e.key === 'End' && open){ e.preventDefault(); setActive(paperOptions.length - 1); return; }
+      if(e.key === 'Home' && open){ e.preventDefault(); setActive(0, 1); return; }
+      if(e.key === 'End' && open){ e.preventDefault(); setActive(paperOptions.length - 1, -1); return; }
       if((e.key === 'Enter' || e.key === ' ') && open){ e.preventDefault(); choose(active); }
     });
     folds.addEventListener('click', function(e){
@@ -481,12 +515,63 @@
     t.addEventListener('pointercancel', endDrag);
   };
 
-  /* ---- Night dye: theme toggle helper ---- */
-  window.woolwork.night = function(on){
+  /* ---- Night dye: URL-backed theme helper ---- */
+  function nightFromUrl(){
+    try{
+      var url = new URL(location.href);
+      var values = url.searchParams.getAll('theme');
+      var on = values[0] === 'night';
+      if(values.length !== (on ? 1 : 0) || (values.length && values[0] !== 'night')){
+        url.searchParams.delete('theme');
+        if(on) url.searchParams.set('theme','night');
+        history.replaceState(history.state,'',url.href);
+      }
+      return on;
+    }
+    catch(e){ return false; }
+  }
+  function syncNightLink(link, on){
+    var raw = link.getAttribute('href');
+    if(!raw || /^(mailto:|tel:|javascript:)/i.test(raw)) return;
+    try{
+      var url = new URL(raw, location.href);
+      if(url.origin !== location.origin) return;
+      url.searchParams.delete('theme');
+      if(on) url.searchParams.set('theme','night');
+      link.setAttribute('href', url.href);
+    }catch(e){}
+  }
+  function syncNightLinks(on){
+    document.querySelectorAll('a[href]').forEach(function(link){ syncNightLink(link, on); });
+  }
+  function syncNightControl(control, on){
+    control.setAttribute('aria-pressed', on ? 'true' : 'false');
+    control.textContent = on ? (control.dataset.dayLabel || 'Day') : (control.dataset.nightLabel || 'Night');
+  }
+  function syncNightControls(on){
+    document.querySelectorAll('[data-woolwork-theme-toggle]').forEach(function(control){
+      syncNightControl(control, on);
+    });
+  }
+  function applyNight(on, writeUrl){
     var root = document.documentElement;
-    if(on === undefined) on = root.getAttribute('data-theme') !== 'night';
     if(on) root.setAttribute('data-theme','night');
     else root.removeAttribute('data-theme');
+    if(writeUrl){
+      try{
+        var url = new URL(location.href);
+        if(on) url.searchParams.set('theme','night');
+        else url.searchParams.delete('theme');
+        history.replaceState(history.state,'',url.href);
+      }catch(e){}
+    }
+    syncNightLinks(on); syncNightControls(on);
     return on;
+  }
+  window.woolwork.night = function(on){
+    if(on === undefined) on = document.documentElement.getAttribute('data-theme') !== 'night';
+    return applyNight(!!on, true);
   };
+  applyNight(nightFromUrl(), false);
+  addEventListener('popstate', function(){ applyNight(nightFromUrl(), false); });
 })();

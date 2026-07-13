@@ -12,7 +12,7 @@ Woolwork is deliberately framework-agnostic: one CSS file of tokens plus compone
 
 ```html
 <link rel="stylesheet" href="/woolwork/woolwork.css">
-<script>document.documentElement.classList.add('ww-js')</script>
+<script>document.documentElement.classList.add('ww-js');try{if(new URL(location.href).searchParams.get('theme')==='night')document.documentElement.setAttribute('data-theme','night')}catch(e){}</script>
 <script src="/woolwork/woolwork.js" defer
         onerror="document.documentElement.classList.remove('ww-js')"></script>
 ```

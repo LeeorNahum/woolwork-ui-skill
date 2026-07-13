@@ -24,13 +24,12 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | UI element | Craft object | How |
 |---|---|---|
 | Button (any action) | A felt patch stitched to the board; pressing settles it 1.5px with a deepened shadow | `.btn-patch` (dye with `--c`/`--t`) |
-| Icon button | A round four-hole sewn button | `.sewn-button` |
+| Icon button | A compact stitched felt patch with an accessible name | `.btn-patch` with an icon and `aria-label` |
 | Button group / segmented control | Patches sharing one stitch line | Compose: `.btn-patch` row with reduced gap; the active one uses the pressed-in shadow of `.pages [aria-current]` |
-| Link | A strand of thread couched under the text | `a.thread-link` (visited links show a straight backstitch) |
+| Link | A strand of thread couched under the text | `a.thread-link` (the loose wave pulls taut on hover; visited links shift to plum thread) |
 | Close / dismiss (wool surfaces) | Two yarn strands tied into an X, the exact look the hamburger settles into | `button.yarn-x` with two `.yarn` children (dye the strands with `--c`) |
 | Close / dismiss (paper popups) | Two pencils laid crossed on the sheet | `button.pencil-x` with two `.pencil` children |
 | Action inside a paper popup | A hand-drawn ink box around the label, never a felt patch | `button.btn-ink` (outline); `.stamp` fills it solid like a rubber stamp, for the one emphasized action a note carries |
-| Floating action button | A larger sewn button pinned above the board | `.sewn-button` sized up, `position:fixed` |
 
 ## Forms
 
@@ -42,7 +41,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | Select | A single properly sized paper choice sheet, sized and aligned like the pocket inputs beside it; its choices unfold directly from its own bottom edge as opaque concertina paper | `select.pocket` (kit JS keeps the real select for form submission and builds the paper control) |
 | Checkbox | A four-hole button cross-stitched when checked, one thread stroke per press phase | `input.sew-check` |
 | Radio | A snap fastener; checking snaps the stud in, only one per group | `input.snap-radio` |
-| Switch / toggle | A buttonhole; the knob is a small sewn button sliding through it | `button.buttonhole[aria-pressed]` with `.knob` |
+| Switch / toggle | A buttonhole; the four-hole knob slides through it | `button.buttonhole[aria-pressed]` with `.knob` |
 | Slider / range | A yarn-ball bead riding a stitched channel | `input.bead-slider` |
 | Progress (determinate) | Yarn knitting across a channel, ending in its remaining ball | `.spool` with `.fill` and `--p` |
 | Progress (indeterminate) / spinner | A ball of yarn winding | `.spinner` |
@@ -62,7 +61,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 | Pagination | A row of small patches; the current page is pressed in | `ul.pages`, current carries `aria-current` |
 | Dropdown menu | A slip of paper slotted out from behind the trigger | `details.flap` with `.panel` (the panel is paper; do not add `.felt`) |
 | Hamburger | Three strands of yarn that pull into a cross | `button.strands` with three `.yarn` children |
-| Stepper / wizard | Beads strung on a yarn line, filled up to the current step | Compose: `.yarn` track with `.sewn-button` sized dots; completed ones dyed, current pressed in |
+| Stepper / wizard | Small stitched tags arranged along a yarn line | Compose: `.yarn` track with compact `.chip` steps; completed ones dyed, current pressed in |
 | Skip link | A thread-link that appears on focus | `a.thread-link` positioned off-screen until `:focus` |
 
 ## Overlays and feedback
@@ -103,7 +102,7 @@ Every UI element maps to a craft object. This is the complete mapping; if an ele
 
 | Behavior | Craft equivalent | How |
 |---|---|---|
-| Press feedback | A 1.5px settle and a deepened shadow, never a scale | Built into `.btn-patch`, `.sewn-button`, `.sew-check`, `.snap-radio` |
+| Press feedback | A 1.5px settle and a deepened shadow, never a scale | Built into `.btn-patch`, `.sew-check`, and `.snap-radio` |
 | Entrance | Place, then stitch | `.sew` (settle) plus `.stitch` (thread draws, dashes fade in) |
 | Selected / checked | Sewn down (cross-stitch, snap, or pressed-in) | Component-specific, listed above |
 | Disabled | Faded dye, no press | `[disabled]` styling; never remove the element's texture |

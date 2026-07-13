@@ -34,7 +34,7 @@ Defined on `:root` in `woolwork.css`:
 }
 ```
 
-Components derive from these. For example `.sewn-button` shades its rim with `color-mix(in srgb, var(--c) 62%, black)`, so a re-dyed button stays consistent.
+Components derive from these. For example `.btn-patch` derives its highlights, shadows, and thread from `--c` and `--t`, so a re-dyed button stays consistent.
 
 ## Dyeing from a brand color
 
@@ -77,19 +77,19 @@ Night is a token override, not a rewrite. Wool at night reads as deeper dye plus
 
 ```css
 [data-theme="night"] {
-  --board: #332e42;
-  --cream: #524a63;  --rose: #b65a6b;  --butter: #b8934a;
-  --leaf:  #66904f;  --sky:  #54859f;  --plum:   #7d6394;
+  --board: #332e42; --paper: #544b66;
+  --cream: #524a63;  --rose: #9d4858;  --butter: #b8934a;
+  --leaf:  #527840;  --sky:  #426f88;  --plum:   #705386;
   --thread-cream: #9c92b5; --thread-rose: #f2b2bd; --thread-butter: #ecd096;
   --thread-leaf: #bcd8a8;  --thread-sky: #aed2e8;  --thread-plum: #d4bfe6;
-  --ink: #f2ecdf; --ink-soft: #c3b8d4;
+  --cocoa: #cfc2b2; --ink: #f2ecdf; --ink-soft: #c3b8d4;
   --hi: rgba(220,215,255,.14); --lo: rgba(10,6,20,.5);
 }
 ```
 
 The rules of the flip: every felt deepens (same hue, lower lightness and chroma), every thread lightens so stitches keep contrast against the darker felt they sit on, and the highlight/occlusion pair dims because the lamp is lower. Label ink is derived from each surface's dye (see above), so dyed components re-choose their lettering automatically when the felts deepen; plain text on the board reads `--ink`. If text is unreadable in night mode, it was hard-coded, and the fix is to move it onto a token, never to patch the night value.
 
-Toggle with `woolwork.night()` (adds/removes the attribute on `<html>` and persists nothing by default; wire your own storage if wanted). Shadows stay the same recipe; darker felt under the same lamp is what makes it feel like the same room with the lights low.
+Toggle with `woolwork.night()`. Night mode writes `theme=night` into the current URL, removes it when returning to day mode, and carries it into same-origin links so navigation preserves the chosen room. A page opened directly with `?theme=night` restores the dark dye. Use the starter's inline head snippet so that URL state applies before the body paints. Theme controls may opt into synchronized labels and `aria-pressed` with `data-woolwork-theme-toggle`, plus optional `data-night-label` and `data-day-label`. Shadows stay the same recipe; darker felt under the same lamp is what makes it feel like the same room with the lights low.
 
 ## Fiber texture and the dye
 

@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="./woolwork.css">
 <!-- Marks the document script-capable before first paint so reveals never flash.
      Keep this only alongside the woolwork.js include below. -->
-<script>document.documentElement.classList.add('ww-js')</script>
+<script>document.documentElement.classList.add('ww-js');try{if(new URL(location.href).searchParams.get('theme')==='night')document.documentElement.setAttribute('data-theme','night')}catch(e){}</script>
 </head>
 <body class="board">
 
@@ -23,7 +23,7 @@
 
     <section class="felt stitch sew" style="--c: var(--butter); padding: 22px 26px;">
       <h2 style="margin: 0 0 8px;">A stitched card</h2>
-      <p>This card arrived with the place-then-stitch reveal: it settles onto the board, then its running stitch draws around the edge.</p>
+      <p>This card arrived with the place-then-stitch reveal: it settles onto the board, then its final thread dashes appear around the edge.</p>
       <button class="btn-patch" style="--c: var(--rose); --t: var(--thread-rose);">A patch button</button>
     </section>
 

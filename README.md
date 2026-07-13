@@ -6,7 +6,7 @@ A design language that turns any web UI into a believable wool, felt, and yarn c
 
 ## What you get
 
-- `assets/woolwork.css`: tokens, the burlap board, felt/knit/yarn materials, and every component (patch buttons, sewn buttons, pockets, seams, zippers, flaps, pinned modals, tags, bead sliders, and more).
+- `assets/woolwork.css`: tokens, the burlap board, felt/knit/yarn materials, and every component (patch buttons, pockets, seams, zippers, flaps, pinned modals, tags, bead sliders, and more).
 - `assets/woolwork.js`: place-then-stitch reveals, cross-stitch checkbox strokes, and small behaviors (tabs, toggles, dropdowns, toasts), all via delegated listeners.
 - `assets/starter.html`: a minimal working page.
 - `references/`: the transformation dictionary, motion bible, theming and dyeing guide, framework integration, and migration/self-update procedure.
