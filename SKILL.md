@@ -3,7 +3,7 @@ name: "woolwork-ui"
 description: "Apply the Woolwork design language to any web UI: a physically believable wool, felt, and yarn world with sewn attachments and place-then-stitch choreography. Use when building a new site or component in a wool, felt, yarn, knit, craft, cozy, or handmade aesthetic, when porting an existing site into that look, or when editing any project that already contains woolwork.css."
 metadata:
   author: "Leeor Nahum"
-  version: "1.3.0"
+  version: "2.0.0"
 ---
 
 # Woolwork UI

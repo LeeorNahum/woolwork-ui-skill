@@ -1,8 +1,8 @@
-/* ============ WOOLWORK v1.3.0 ============
+/* ============ WOOLWORK v2.0.0 ============
    A wool, felt, and yarn material system for the web.
    Laws: one top-left light · nothing flat · nothing straight · everything attached · everything soft. */
 :root{
-  --ww-version:"1.3.0";
+  --ww-version:"2.0.0";
   /* board + dyed wool palette (heathered by texture, never flat) */
   --board:#e3ddd0; --cream:#f6efdf; --rose:#e2707e; --butter:#f0c05a; --leaf:#7fae6a;
   --sky:#6fa8c9; --plum:#9a7bb0; --cocoa:#7a5c49; --ink:#463527; --ink-soft:#7d6a56;

@@ -1,4 +1,4 @@
-/* WOOLWORK v1.3.0 progressive enhancement.
+/* WOOLWORK v2.0.0 progressive enhancement.
    Everything renders without this file; it only adds motion and physics. */
 (function(){
   'use strict';
