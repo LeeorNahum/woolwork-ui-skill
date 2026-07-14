@@ -6,13 +6,13 @@ Woolwork is versioned so that an agent invoking this skill on an existing projec
 
 1. Find the project's Woolwork CSS (search the codebase for `--ww-version`).
 2. Read its value and compare it against this skill's version in `SKILL.md` frontmatter.
-3. Equal: the project is current; work normally.
+3. Equal: the project is current. Work normally.
 4. Project older: run the update procedure below before new work.
 5. No `--ww-version` anywhere: the project hand-copied fragments before adoption. Audit it against the full dictionary in `references/dictionary.md` and install the current kit.
 
 ## Update procedure
 
-The kit files are copies, never forked, and every project keeps its own overrides in its own stylesheets. That contract makes updating mostly mechanical; your judgment goes into the markup and the overrides, guided by what actually changed.
+The kit files are copies, never forked, and every project keeps its own overrides in its own stylesheets. That contract makes updating mostly mechanical. Your judgment goes into the markup and the overrides, guided by what actually changed.
 
 1. See what changed. In order of preference:
    - Diff directly: the project's `woolwork.css` and `woolwork.js` are the old state and this skill's `assets/` are the new state, so `diff` them file against file. This always works, offline, with no history needed.
@@ -25,7 +25,7 @@ The kit files are copies, never forked, and every project keeps its own override
 
 ## Decisions that do not move
 
-These were settled deliberately and are not to be reversed by any future version; if a diff appears to reverse one, treat it as a defect in the newer state and raise it rather than applying it:
+These were settled deliberately and are not to be reversed by any future version. If a diff appears to reverse one, treat it as a defect in the newer state and raise it rather than applying it:
 
 - Press feedback is a translate settle plus a deepened shadow. No scaling, and no continuous pointer-tracked deformation of any kind; that was tried, cut, and must not return under a new name.
 - Reveals are visual only and never affect layout or scroll height.
@@ -33,6 +33,6 @@ These were settled deliberately and are not to be reversed by any future version
 
 ## Forward-compatibility rules for future versions
 
-- Never repurpose a class name for a different visual; retire names instead.
+- Never repurpose a class name for a different visual. Retire names instead.
 - Class and token names are append-only within a major version.
 - Any removal or rename is a major version bump, called out plainly in the release notes and the commit that makes it.

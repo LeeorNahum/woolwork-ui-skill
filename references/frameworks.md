@@ -17,27 +17,27 @@ Woolwork is deliberately framework-agnostic: one CSS file of tokens plus compone
         onerror="document.documentElement.classList.remove('ww-js')"></script>
 ```
 
-Done. `defer` is fine; the CSS carries the first paint. The inline one-liner marks the document as script-capable before first paint so `.sew` elements never flash visible before their reveal. Keep the `onerror` disarm with it: if the kit script fails to load after the stylesheet succeeded, the class comes off and the page falls back to fully visible content.
+Done. `defer` is fine. The CSS carries the first paint. The inline one-liner marks the document as script-capable before first paint so `.sew` elements never flash visible before their reveal. Keep the `onerror` disarm with it: if the kit script fails to load after the stylesheet succeeded, the class comes off and the page falls back to fully visible content.
 
 ## Next.js (App Router)
 
 - Import `woolwork.css` in the root `layout.tsx` (global CSS).
 - Import `woolwork.js` once from a small `"use client"` component rendered in the root layout. It is a self-running script with no exported init, and module import semantics already guarantee it executes only once per page load.
-- Server components can emit Woolwork classes freely; there is no client dependency for appearance.
-- The `.sew` reveal system uses `IntersectionObserver`, which only exists client-side; the CSS gives `.sew` elements full opacity by default and the JS opts them into the reveal, so SSR output is never invisible when scripts are disabled or stripped. Keep this order (CSS visible by default, JS hides then reveals) if you modify the kit.
+- Server components can emit Woolwork classes freely. There is no client dependency for appearance.
+- The `.sew` reveal system uses `IntersectionObserver`, which only exists client-side. The CSS gives `.sew` elements full opacity by default and the JS opts them into the reveal, so SSR output is never invisible when scripts are disabled or stripped. Keep this order (CSS visible by default, JS hides then reveals) if you modify the kit.
 - To avoid a flash of revealed-then-hidden content on slow first paints, add the `ww-js` class before paint with an inline script rendered ahead of the page body (in Next.js, an inline `beforeInteractive` script), and pair it with an error handler on the kit script load that removes the class, so a stylesheet-loaded-but-script-failed page falls back to visible content. Never add the class in server markup itself: markup is shared with non-JS clients, and they must keep the fully visible fallback.
 
 ## Vite / SPA (React, Vue, Svelte)
 
 - `import "./woolwork/woolwork.css"` in the entry file.
 - `import "./woolwork/woolwork.js"` once in the entry file. Delegation means components mounted at any time behave correctly.
-- For dialogs, use the native `<dialog class="pinned">` and call `showModal()` from your framework code; Woolwork only styles it.
+- For dialogs, use the native `<dialog class="pinned">` and call `showModal()` from your framework code. Woolwork only styles it.
 
 ## Tailwind
 
 Two workable postures:
 
-1. Side by side (recommended). Load `woolwork.css` after Tailwind's base. Use Tailwind for layout (flex, grid, spacing) and Woolwork classes for material (`felt`, `btn-patch`, `seam`). They do not collide; Woolwork never sets layout except inside its own components.
+1. Side by side (recommended). Load `woolwork.css` after Tailwind's base. Use Tailwind for layout (flex, grid, spacing) and Woolwork classes for material (`felt`, `btn-patch`, `seam`). They do not collide. Woolwork never sets layout except inside its own components.
 2. Token bridge. Map Woolwork tokens into `theme.extend.colors` so utilities like `bg-felt-rose` exist:
 
 ```js
@@ -50,15 +50,15 @@ theme: { extend: { colors: {
 }}}
 ```
 
-Do not try to re-express the components as utility strings; the shadow and texture recipes are too long and belong in the component classes.
+Do not try to re-express the components as utility strings. The shadow and texture recipes are too long and belong in the component classes.
 
 ## Headless component libraries (Radix, Headless UI, Ark) and shadcn/ui
 
 This is the strongest pairing for app work. Headless libraries supply behavior (focus management, keyboard interaction, ARIA wiring) and deliberately supply no appearance, which is exactly the half Woolwork does not do. Put Woolwork classes on the rendered parts: the Radix dialog content gets `felt deep stitch`, its trigger gets `btn-patch`, a Radix checkbox can render the kit's `.sew-check` visuals on its indicator.
 
-shadcn/ui is styled, so treat it as a donor of behavior rather than of looks: keep its component logic, replace its Tailwind visual classes with Woolwork component classes, and map Woolwork tokens over its CSS variables (`--background` to `--board`, `--card` to `--cream`, `--primary` to a felt color, `--ring` to `--thread-sky`). What you must not do is layer Woolwork on top of shadcn's own borders, rings, and shadows; two competing material systems read as noise. One material system at a time.
+shadcn/ui is styled, so treat it as a donor of behavior rather than of looks: keep its component logic, replace its Tailwind visual classes with Woolwork component classes, and map Woolwork tokens over its CSS variables (`--background` to `--board`, `--card` to `--cream`, `--primary` to a felt color, `--ring` to `--thread-sky`). What you must not do is layer Woolwork on top of shadcn's own borders, rings, and shadows. Two competing material systems read as noise. One material system at a time.
 
-The general rule across all libraries: Woolwork owns material, light, and press physics; the library owns behavior and layout. Anything in a library's styling layer that expresses material (borders, shadows, radii, backgrounds) gets replaced, not augmented.
+The general rule across all libraries: Woolwork owns material, light, and press physics. The library owns behavior and layout. Anything in a library's styling layer that expresses material (borders, shadows, radii, backgrounds) gets replaced, not augmented.
 
 ## Turbo / htmx / Astro islands
 
@@ -72,7 +72,7 @@ Out of scope. Woolwork depends on CSS filters, blend modes, and SVG background t
 
 The core kit is Tier 1 and 2 only. If a page earns a hero simulation (one per page maximum), isolate it:
 
-- Render into a `<canvas>` in a leaf component; never let the sim own scroll or layout.
+- Render into a `<canvas>` in a leaf component. Never let the sim own scroll or layout.
 - Feature-detect: `navigator.gpu` for WebGPU, fall back to 2D canvas or a static image. Mobile WebGPU is still uneven in 2026.
 - Pause with `IntersectionObserver` when off-screen and on `visibilitychange`.
 - Respect `prefers-reduced-motion` by rendering a single static frame.

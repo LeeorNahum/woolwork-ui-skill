@@ -1,5 +1,5 @@
-/* WOOLWORK v2.0.0 progressive enhancement.
-   Everything renders without this file; it only adds motion and physics. */
+/* WOOLWORK v2.0.1 progressive enhancement.
+   Everything renders without this file. It only adds motion and physics. */
 (function(){
   'use strict';
   document.documentElement.classList.add('ww-js');
